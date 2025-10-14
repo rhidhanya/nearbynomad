@@ -1,18 +1,17 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { Slider } from "@/components/ui/slider"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Slider } from "@/components/ui/slider";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
 import {
   Compass,
-  Sparkles,
   Heart,
   Coffee,
-  Mountain,
+  Sparkles,
   Utensils,
   Camera,
   Trees,
@@ -23,7 +22,8 @@ import {
   Footprints,
   Users,
   User,
-} from "lucide-react"
+  Mountain, // Added Mountain import
+} from "lucide-react";
 
 const moods = [
   { emoji: "😊", label: "Happy", value: "happy" },
@@ -32,157 +32,160 @@ const moods = [
   { emoji: "😍", label: "Romantic", value: "romantic" },
   { emoji: "😔", label: "Sad", value: "sad" },
   { emoji: "🤩", label: "Excited", value: "excited" },
-]
+];
 
 const interests = [
-  { icon: Coffee, label: "Relax", value: "relax", color: "bg-accent/10 hover:bg-accent/20 text-accent" },
-  { icon: Sparkles, label: "Play", value: "play", color: "bg-primary/10 hover:bg-primary/20 text-primary" },
-  { icon: Utensils, label: "Eat", value: "eat", color: "bg-secondary/10 hover:bg-secondary/20 text-secondary" },
-  { icon: Camera, label: "Sightseeing", value: "sightseeing", color: "bg-chart-4/10 hover:bg-chart-4/20 text-chart-4" },
-  { icon: Trees, label: "Nature", value: "nature", color: "bg-chart-5/10 hover:bg-chart-5/20 text-chart-5" },
-  { icon: Dumbbell, label: "Sports", value: "sports", color: "bg-chart-1/10 hover:bg-chart-1/20 text-chart-1" },
-  { icon: Calendar, label: "Events", value: "events", color: "bg-chart-2/10 hover:bg-chart-2/20 text-chart-2" },
-]
+  { icon: Coffee, label: "Relax", value: "relax" },
+  { icon: Sparkles, label: "Play", value: "play" },
+  { icon: Utensils, label: "Eat", value: "eat" },
+  { icon: Camera, label: "Sightseeing", value: "sightseeing" },
+  { icon: Trees, label: "Nature", value: "nature" },
+  { icon: Dumbbell, label: "Sports", value: "sports" },
+  { icon: Calendar, label: "Events", value: "events" },
+];
 
 const foodTypes = [
   { emoji: "🍔", label: "Junk Food", value: "junk" },
   { emoji: "🍲", label: "Home Food", value: "home" },
   { emoji: "🍩", label: "Desserts", value: "desserts" },
-]
+];
 
 const transportOptions = [
   { icon: Car, label: "Uber", value: "uber" },
   { icon: Footprints, label: "Walk", value: "walk" },
   { icon: Bike, label: "Bike", value: "bike" },
   { icon: Car, label: "Car", value: "car" },
-]
+];
 
 const accessibilityOptions = [
   { emoji: "🐶", label: "Pet-friendly", value: "pet" },
   { emoji: "👶", label: "Kid-friendly", value: "kid" },
   { emoji: "♿", label: "Wheelchair accessible", value: "wheelchair" },
   { emoji: "🚶‍♀️", label: "Safe-walk", value: "safe" },
-]
+];
 
 export default function MoodPage() {
-  const router = useRouter()
-  const [selectedMood, setSelectedMood] = useState<string>("")
-  const [selectedInterests, setSelectedInterests] = useState<string[]>([])
-  const [selectedFoodTypes, setSelectedFoodTypes] = useState<string[]>([])
-  const [energyLevel, setEnergyLevel] = useState([50])
-  const [budget, setBudget] = useState("")
-  const [transport, setTransport] = useState<string>("")
-  const [socialMode, setSocialMode] = useState<"solo" | "friends">("solo")
-  const [accessibility, setAccessibility] = useState<string[]>([])
+  const router = useRouter();
+  const [selectedMood, setSelectedMood] = useState<string>("");
+  const [selectedInterests, setSelectedInterests] = useState<string[]>([]);
+  const [selectedFoodTypes, setSelectedFoodTypes] = useState<string[]>([]);
+  const [energyLevel, setEnergyLevel] = useState([50]);
+  const [budget, setBudget] = useState("");
+  const [transport, setTransport] = useState<string>("");
+  const [socialMode, setSocialMode] = useState<"solo" | "friends">("solo");
+  const [accessibility, setAccessibility] = useState<string[]>([]);
 
   const toggleInterest = (value: string) => {
-    setSelectedInterests((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]))
-  }
+    setSelectedInterests((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]));
+  };
 
   const toggleFoodType = (value: string) => {
-    setSelectedFoodTypes((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]))
-  }
+    setSelectedFoodTypes((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]));
+  };
 
   const toggleAccessibility = (value: string) => {
-    setAccessibility((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]))
-  }
+    setAccessibility((prev) => (prev.includes(value) ? prev.filter((i) => i !== value) : [...prev, value]));
+  };
 
   const getEnergyLabel = () => {
-    if (energyLevel[0] < 33) return "🛋 Lazy - Short walks nearby"
-    if (energyLevel[0] < 66) return "🚶 Moderate - Up to 5km radius"
-    return "🧗 Adventurous - Explore far & wide"
-  }
+    if (energyLevel[0] < 33) return "🛋 Lazy - Short walks nearby";
+    if (energyLevel[0] < 66) return "🚶 Moderate - Up to 5km radius";
+    return "🧗 Adventurous - Explore far & wide";
+  };
 
   const getBudgetSuggestion = () => {
-    const amount = Number.parseInt(budget)
-    if (!amount) return ""
-    if (amount < 20) return "💸 Broke mode: street food walks & free spots"
-    if (amount < 50) return "💵 Budget-friendly: casual dining & local gems"
-    return "💰 Loaded: fine dining, events & premium experiences"
-  }
+    const amount = Number.parseInt(budget);
+    if (!amount) return "";
+    if (amount < 20) return "💸 Broke mode: street food walks & free spots";
+    if (amount < 50) return "💵 Budget-friendly: casual dining & local gems";
+    return "💰 Loaded: fine dining, events & premium experiences";
+  };
 
   const handleSubmit = () => {
-    // Store preferences and navigate to recommendations
-    router.push("/recommendations")
-  }
+    router.push("/recommendations");
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20 py-8 px-4">
-      <div className="container mx-auto max-w-3xl space-y-6">
+    <div className="min-h-screen bg-gray-100 py-12 px-4">
+      <div className="container mx-auto max-w-4xl space-y-8">
         {/* Header */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-2">
-            <Compass className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold">Let's find your vibe</h1>
+        <div className="text-center space-y-3">
+          <div className="flex items-center justify-center gap-3">
+            <Compass className="w-8 h-8 text-gray-800 transition-transform duration-300 hover:rotate-12" />
+            <h1 className="text-4xl font-bold text-black tracking-tight">What’s Your Vibe Today?</h1>
           </div>
-          <p className="text-muted-foreground">Tell us how you're feeling and what you're craving</p>
+          <p className="text-lg text-gray-600 leading-relaxed">
+            Tell us how you’re feeling, and we’ll find the perfect spots to match your mood.
+          </p>
         </div>
 
         {/* Mood Selection */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Heart className="w-5 h-5 text-primary" />
-            How are you feeling today?
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4 flex items-center gap-2">
+            <Heart className="w-6 h-6 text-gray-800" />
+            How’s Your Mood?
           </h2>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {moods.map((mood) => (
               <button
                 key={mood.value}
                 onClick={() => setSelectedMood(mood.value)}
-                className={`p-4 rounded-2xl border-2 transition-all hover:scale-105 ${
+                className={`p-4 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
                   selectedMood === mood.value
-                    ? "border-primary bg-primary/10 shadow-lg"
-                    : "border-border bg-background hover:border-primary/50"
+                    ? "border-gray-600 bg-gray-200 shadow-md"
+                    : "border-gray-300 bg-white hover:border-gray-400"
                 }`}
               >
-                <div className="text-4xl mb-2">{mood.emoji}</div>
-                <div className="text-sm font-medium">{mood.label}</div>
+                <div className="text-3xl mb-2">{mood.emoji}</div>
+                <div className="text-sm font-medium text-gray-800">{mood.label}</div>
               </button>
             ))}
           </div>
         </Card>
 
         {/* Interest Selection */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Sparkles className="w-5 h-5 text-accent" />
-            What interests you?
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4 flex items-center gap-2">
+            <Sparkles className="w-6 h-6 text-gray-800" />
+            What Are You Craving?
           </h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {interests.map((interest) => {
-              const Icon = interest.icon
+              const Icon = interest.icon;
               return (
                 <button
                   key={interest.value}
                   onClick={() => toggleInterest(interest.value)}
-                  className={`p-4 rounded-2xl border-2 transition-all hover:scale-105 ${interest.color} ${
-                    selectedInterests.includes(interest.value) ? "border-current shadow-lg scale-105" : "border-border"
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                    selectedInterests.includes(interest.value)
+                      ? "border-gray-600 bg-gray-200 shadow-md"
+                      : "border-gray-300 bg-white hover:border-gray-400"
                   }`}
                 >
-                  <Icon className="w-8 h-8 mx-auto mb-2" />
-                  <div className="text-sm font-medium">{interest.label}</div>
+                  <Icon className="w-6 h-6 mx-auto mb-2 text-gray-800" />
+                  <div className="text-sm font-medium text-gray-800">{interest.label}</div>
                 </button>
-              )
+              );
             })}
           </div>
 
           {/* Food Types (shown when Eat is selected) */}
           {selectedInterests.includes("eat") && (
-            <div className="mt-4 pt-4 border-t border-border">
-              <h3 className="text-sm font-semibold mb-3 text-muted-foreground">What kind of food?</h3>
-              <div className="flex flex-wrap gap-2">
+            <div className="mt-6 pt-4 border-t border-gray-300">
+              <h3 className="text-sm font-semibold text-gray-600 mb-3">What kind of food?</h3>
+              <div className="flex flex-wrap gap-3">
                 {foodTypes.map((food) => (
                   <button
                     key={food.value}
                     onClick={() => toggleFoodType(food.value)}
-                    className={`px-4 py-2 rounded-xl border-2 transition-all hover:scale-105 ${
+                    className={`px-4 py-2 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
                       selectedFoodTypes.includes(food.value)
-                        ? "border-secondary bg-secondary/20 shadow-md"
-                        : "border-border bg-background hover:border-secondary/50"
+                        ? "border-gray-600 bg-gray-200 shadow-md"
+                        : "border-gray-300 bg-white hover:border-gray-400"
                     }`}
                   >
                     <span className="mr-2">{food.emoji}</span>
-                    <span className="text-sm font-medium">{food.label}</span>
+                    <span className="text-sm font-medium text-gray-800">{food.label}</span>
                   </button>
                 ))}
               </div>
@@ -191,22 +194,28 @@ export default function MoodPage() {
         </Card>
 
         {/* Energy Level */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4 flex items-center gap-2">
-            <Mountain className="w-5 h-5 text-chart-5" />
-            What's your energy level?
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4 flex items-center gap-2">
+            <Mountain className="w-6 h-6 text-gray-800" />
+            How Much Energy Do You Have?
           </h2>
           <div className="space-y-4">
-            <Slider value={energyLevel} onValueChange={setEnergyLevel} max={100} step={1} className="w-full" />
-            <div className="text-center p-3 rounded-xl bg-muted/50">
-              <p className="text-lg font-medium">{getEnergyLabel()}</p>
+            <Slider
+              value={energyLevel}
+              onValueChange={setEnergyLevel}
+              max={100}
+              step={1}
+              className="w-full"
+            />
+            <div className="text-center p-3 rounded-lg bg-gray-100">
+              <p className="text-lg font-medium text-gray-800">{getEnergyLabel()}</p>
             </div>
           </div>
         </Card>
 
-        {/* Budget */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4">What's your budget?</h2>
+       
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4">What’s Your Budget?</h2>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-2xl">💵</span>
@@ -215,80 +224,82 @@ export default function MoodPage() {
                 placeholder="Enter amount"
                 value={budget}
                 onChange={(e) => setBudget(e.target.value)}
-                className="rounded-2xl py-6 border-2 text-lg"
+                className="rounded-lg py-5 border-2 border-gray-300 focus:border-gray-600 focus:ring-2 focus:ring-gray-400 transition-all duration-300"
               />
             </div>
             {budget && (
-              <div className="p-3 rounded-xl bg-secondary/10 border border-secondary/20">
-                <p className="text-sm font-medium text-secondary-foreground">{getBudgetSuggestion()}</p>
+              <div className="p-3 rounded-lg bg-gray-100 border border-gray-200">
+                <p className="text-sm font-medium text-gray-600">{getBudgetSuggestion()}</p>
               </div>
             )}
           </div>
         </Card>
 
-        {/* Transport */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4">How will you get there?</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4">How Will You Get There?</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {transportOptions.map((option) => {
-              const Icon = option.icon
+              const Icon = option.icon;
               return (
                 <button
                   key={option.value}
                   onClick={() => setTransport(option.value)}
-                  className={`p-4 rounded-2xl border-2 transition-all hover:scale-105 ${
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
                     transport === option.value
-                      ? "border-accent bg-accent/10 shadow-lg"
-                      : "border-border bg-background hover:border-accent/50"
+                      ? "border-gray-600 bg-gray-200 shadow-md"
+                      : "border-gray-300 bg-white hover:border-gray-400"
                   }`}
                 >
-                  <Icon className="w-8 h-8 mx-auto mb-2 text-accent" />
-                  <div className="text-sm font-medium">{option.label}</div>
+                  <Icon className="w-6 h-6 mx-auto mb-2 text-gray-800" />
+                  <div className="text-sm font-medium text-gray-800">{option.label}</div>
                 </button>
-              )
+              );
             })}
           </div>
         </Card>
 
-        {/* Social Mode */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4">Who's joining?</h2>
-          <div className="grid grid-cols-2 gap-3">
+        
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4">Who’s Joining?</h2>
+          <div className="grid grid-cols-2 gap-4">
             <button
               onClick={() => setSocialMode("solo")}
-              className={`p-6 rounded-2xl border-2 transition-all hover:scale-105 ${
+              className={`p-6 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
                 socialMode === "solo"
-                  ? "border-primary bg-primary/10 shadow-lg"
-                  : "border-border bg-background hover:border-primary/50"
+                  ? "border-gray-600 bg-gray-200 shadow-md"
+                  : "border-gray-300 bg-white hover:border-gray-400"
               }`}
             >
-              <User className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <div className="font-medium">Solo</div>
+              <User className="w-6 h-6 mx-auto mb-2 text-gray-800" />
+              <div className="text-sm font-medium text-gray-800">Solo</div>
             </button>
             <button
               onClick={() => setSocialMode("friends")}
-              className={`p-6 rounded-2xl border-2 transition-all hover:scale-105 ${
+              className={`p-6 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
                 socialMode === "friends"
-                  ? "border-primary bg-primary/10 shadow-lg"
-                  : "border-border bg-background hover:border-primary/50"
+                  ? "border-gray-600 bg-gray-200 shadow-md"
+                  : "border-gray-300 bg-white hover:border-gray-400"
               }`}
             >
-              <Users className="w-8 h-8 mx-auto mb-2 text-primary" />
-              <div className="font-medium">Friends</div>
+              <Users className="w-6 h-6 mx-auto mb-2 text-gray-800" />
+              <div className="text-sm font-medium text-gray-800">Friends</div>
             </button>
           </div>
         </Card>
 
-        {/* Accessibility */}
-        <Card className="p-6 rounded-3xl border-2 bg-card/95 backdrop-blur">
-          <h2 className="text-xl font-bold mb-4">Accessibility needs</h2>
-          <div className="flex flex-wrap gap-2">
+       
+        <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+          <h2 className="text-xl font-semibold text-black mb-4">Any Accessibility Needs?</h2>
+          <div className="flex flex-wrap gap-3">
             {accessibilityOptions.map((option) => (
               <Badge
                 key={option.value}
                 variant={accessibility.includes(option.value) ? "default" : "outline"}
-                className={`px-4 py-2 rounded-xl text-sm cursor-pointer transition-all hover:scale-105 ${
-                  accessibility.includes(option.value) ? "shadow-md" : ""
+                className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-all duration-300 hover:scale-105 ${
+                  accessibility.includes(option.value)
+                    ? "bg-gray-200 border-gray-600 text-gray-800 shadow-md"
+                    : "border-gray-300 text-gray-600 hover:border-gray-400"
                 }`}
                 onClick={() => toggleAccessibility(option.value)}
               >
@@ -299,16 +310,16 @@ export default function MoodPage() {
           </div>
         </Card>
 
-        {/* Submit Button */}
+      
         <Button
           onClick={handleSubmit}
           size="lg"
-          className="w-full rounded-2xl py-8 text-xl shadow-lg hover:shadow-xl transition-all hover:scale-105"
+          className="w-full rounded-lg py-6 text-lg bg-black text-white hover:bg-gray-800 hover:scale-105 transition-all duration-300 shadow-lg"
         >
           Find My Perfect Spots
-          <Sparkles className="w-5 h-5 ml-2" />
+          <Sparkles className="w-5 h-5 ml-2 text-gray-200" />
         </Button>
       </div>
     </div>
-  )
+  );
 }

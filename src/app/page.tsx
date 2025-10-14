@@ -1,85 +1,103 @@
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card } from "@/components/ui/card"
-import { MapPin, Sparkles, Heart, Compass } from "lucide-react"
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { MapPin, Sparkles, Heart, Compass } from "lucide-react";
 
 export default function LandingPage() {
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/20 via-accent/10 to-secondary/20">
+    <div className="min-h-screen bg-gray-100 text-black">
       {/* Hero Section */}
-      <div className="container mx-auto px-4 py-12 md:py-20">
-        <div className="flex flex-col items-center text-center space-y-8">
+      <div className="container mx-auto px-6 py-16 md:py-24">
+        <div className="flex flex-col items-start text-left space-y-6 max-w-3xl">
           {/* Logo & Brand */}
-          <div className="flex items-center gap-3">
-            <div className="relative">
-              <Compass className="w-12 h-12 text-primary animate-spin-slow" />
-              <Sparkles className="w-5 h-5 text-secondary absolute -top-1 -right-1" />
-            </div>
-            <h1 className="text-4xl md:text-6xl font-bold bg-gradient-to-r from-primary via-accent to-secondary bg-clip-text text-transparent">
-              NearbyNomad
-            </h1>
+          <div className="flex items-center gap-4">
+            <Compass className="w-10 h-10 text-black transition-transform duration-300 hover:rotate-12" />
+            <h1 className="text-5xl font-bold tracking-tight">NearbyNomad</h1>
           </div>
 
           {/* Tagline */}
-          <p className="text-xl md:text-2xl text-foreground/80 max-w-2xl text-balance">
-            Your mood-based trip planner that finds the perfect nearby adventures just for you
+          <p className="text-2xl text-gray-600 leading-relaxed">
+            Hey there, wanderer! Let’s find nearby adventures that match your vibe—whether you’re craving calm or chaos.
           </p>
 
           {/* CTA Buttons */}
-          <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
-            <Link href="/login" className="w-full sm:w-auto">
+          <div className="flex flex-col sm:flex-row gap-4">
+            <Link href="/login">
               <Button
-                size="lg"
-                className="w-full sm:w-auto text-lg px-8 py-6 rounded-2xl shadow-lg hover:shadow-xl transition-all hover:scale-105"
+                className="px-6 py-3 text-lg bg-black text-white rounded-lg hover:bg-gray-800 hover:scale-105 transition-all duration-300"
               >
-                Get Started
+                Start Your Journey
               </Button>
             </Link>
-            <Link href="/mood" className="w-full sm:w-auto">
+            <Link href="/mood">
               <Button
-                size="lg"
                 variant="outline"
-                className="w-full sm:w-auto text-lg px-8 py-6 rounded-2xl border-2 hover:bg-accent/10 transition-all hover:scale-105 bg-transparent"
+                className="px-6 py-3 text-lg border-2 border-gray-600 text-gray-800 rounded-lg hover:bg-gray-200 hover:scale-105 transition-all duration-300"
               >
-                Explore Now
+                What’s Your Mood?
               </Button>
             </Link>
           </div>
+        </div>
+      </div>
 
-          {/* Feature Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12 w-full max-w-5xl">
-            <Card className="p-6 rounded-3xl border-2 hover:shadow-lg transition-all hover:scale-105 bg-card/80 backdrop-blur">
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center">
-                  <Heart className="w-7 h-7 text-primary" />
+      {/* Features Section */}
+      <div className="bg-gray-200 py-16">
+        <div className="container mx-auto px-6">
+          <h2 className="text-3xl font-semibold text-black mb-12 text-center">
+            Why You’ll Love Exploring with Us
+          </h2>
+          <div className="flex flex-col md:flex-row md:justify-center gap-8">
+            <Card className="p-6 rounded-lg border border-gray-300 bg-white max-w-sm hover:shadow-lg hover:shadow-gray-400/50 hover:scale-105 transition-all duration-300">
+              <div className="flex items-start gap-4">
+                <Heart className="w-8 h-8 text-gray-800 mt-1 transition-transform duration-300 hover:scale-110" />
+                <div>
+                  <h3 className="text-xl font-bold text-black">Feels Like You</h3>
+                  <p className="text-gray-600 mt-2">
+                    Tell us your mood—chill, adventurous, or curious—and we’ll find spots that feel just right.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold">Mood-Based</h3>
-                <p className="text-muted-foreground text-balance">Tell us how you feel, we'll find the perfect spot</p>
               </div>
             </Card>
 
-            <Card className="p-6 rounded-3xl border-2 hover:shadow-lg transition-all hover:scale-105 bg-card/80 backdrop-blur">
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 rounded-2xl bg-accent/10 flex items-center justify-center">
-                  <MapPin className="w-7 h-7 text-accent" />
+            <Card className="p-6 rounded-lg border border-gray-300 bg-white max-w-sm hover:shadow-lg hover:shadow-gray-400/50 hover:scale-105 transition-all duration-300">
+              <div className="flex items-start gap-4">
+                <MapPin className="w-8 h-8 text-gray-800 mt-1 transition-transform duration-300 hover:scale-110" />
+                <div>
+                  <h3 className="text-xl font-bold text-black">Close to Home</h3>
+                  <p className="text-gray-600 mt-2">
+                    Discover hidden gems just a short trip away, no matter where you are.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold">Nearby & Easy</h3>
-                <p className="text-muted-foreground text-balance">Discover hidden gems within your travel radius</p>
               </div>
             </Card>
 
-            <Card className="p-6 rounded-3xl border-2 hover:shadow-lg transition-all hover:scale-105 bg-card/80 backdrop-blur">
-              <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-14 h-14 rounded-2xl bg-secondary/10 flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-secondary" />
+            <Card className="p-6 rounded-lg border border-gray-300 bg-white max-w-sm hover:shadow-lg hover:shadow-gray-400/50 hover:scale-105 transition-all duration-300">
+              <div className="flex items-start gap-4">
+                <Sparkles className="w-8 h-8 text-gray-800 mt-1 transition-transform duration-300 hover:scale-110" />
+                <div>
+                  <h3 className="text-xl font-bold text-black">Made for You</h3>
+                  <p className="text-gray-600 mt-2">
+                    Get recommendations tailored to your unique style and preferences.
+                  </p>
                 </div>
-                <h3 className="text-xl font-bold">Personalized</h3>
-                <p className="text-muted-foreground text-balance">Tailored recommendations based on your vibe</p>
               </div>
             </Card>
           </div>
         </div>
       </div>
+
+      {/* Closing CTA */}
+      <div className="container mx-auto px-6 py-16 text-center">
+        <h2 className="text-3xl font-semibold text-black mb-6">
+          Ready to Find Your Next Adventure?
+        </h2>
+        <Link href="/login">
+          <Button className="px-8 py-4 text-xl bg-black text-white rounded-lg hover:bg-gray-800 hover:scale-105 transition-all duration-300">
+            Let’s Go!
+          </Button>
+        </Link>
+      </div>
     </div>
-  )
+  );
 }
