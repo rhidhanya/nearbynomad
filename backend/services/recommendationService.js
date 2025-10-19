@@ -1,757 +1,331 @@
-const _ = require('lodash');
-const moment = require('moment');
+// Enhanced Recommendation Service for NearbyNomad
+const fs = require('fs');
+const path = require('path');
 
-class RecommendationService {
-  constructor() {
-    this.moodProfiles = this.initializeMoodProfiles();
-    this.interestWeights = this.initializeInterestWeights();
-    this.timeBasedFactors = this.initializeTimeBasedFactors();
+// Load places data from the JSON file
+const loadPlacesData = () => {
+  try {
+    const placesPath = path.join(__dirname, '../../src/data/places.json');
+    const placesData = fs.readFileSync(placesPath, 'utf8');
+    return JSON.parse(placesData);
+  } catch (error) {
+    console.error('Error loading places data:', error);
+    return [];
   }
+};
 
-  /**
-   * Generate personalized recommendations based on user preferences and location
-   * @param {object} userPreferences - User's mood and preferences
-   * @param {array} nearbyPlaces - Array of nearby places
-   * @param {object} userLocation - User's current location
-   */
-  async generateRecommendations(userPreferences, nearbyPlaces, userLocation) {
-    try {
-      const {
-        mood = '',
-        interests = [],
-        energyLevel = 50,
-        budget = 0,
-        transport = '',
-        socialMode = 'solo',
-        accessibility = [],
-        foodTypes = []
-      } = userPreferences;
+// Enhanced energy level mapping with 5 levels
+const ENERGY_LEVELS = {
+  'very_low': { maxDistance: 1, weight: 0.8, activityLevel: 0.2 },
+  'low': { maxDistance: 2, weight: 0.6, activityLevel: 0.4 },
+  'medium': { maxDistance: 5, weight: 0.4, activityLevel: 0.6 },
+  'high': { maxDistance: 10, weight: 0.2, activityLevel: 0.8 },
+  'very_high': { maxDistance: 20, weight: 0.1, activityLevel: 1.0 }
+};
 
-      // Calculate recommendation scores for each place
-      const scoredPlaces = nearbyPlaces.map(place => {
-        const score = this.calculateRecommendationScore(place, userPreferences, userLocation);
-        return { ...place, recommendationScore: score };
-      });
+// Mood-based scoring system
+const MOOD_SCORING = {
+  'happy': {
+    categories: { 'Cafe': 0.9, 'Restaurant': 0.8, 'Sightseeing': 0.7, 'Shopping': 0.6, 'Temple': 0.5 },
+    keywords: ['beautiful', 'scenic', 'vibrant', 'colorful', 'cheerful'],
+    energyBoost: 0.1
+  },
+  'excited': {
+    categories: { 'Adventure': 1.0, 'Sightseeing': 0.8, 'Shopping': 0.6, 'Cafe': 0.4, 'Temple': 0.3 },
+    keywords: ['adventure', 'thrilling', 'exciting', 'amazing', 'breathtaking'],
+    energyBoost: 0.2
+  },
+  'relaxed': {
+    categories: { 'Temple': 0.9, 'Cafe': 0.8, 'Sightseeing': 0.6, 'Restaurant': 0.5, 'Shopping': 0.3 },
+    keywords: ['peaceful', 'serene', 'calm', 'tranquil', 'quiet'],
+    energyBoost: -0.1
+  },
+  'curious': {
+    categories: { 'Sightseeing': 0.9, 'Temple': 0.8, 'Cafe': 0.6, 'Restaurant': 0.5, 'Shopping': 0.4 },
+    keywords: ['historical', 'cultural', 'unique', 'interesting', 'fascinating'],
+    energyBoost: 0.05
+  },
+  'adventurous': {
+    categories: { 'Adventure': 1.0, 'Sightseeing': 0.7, 'Cafe': 0.3, 'Temple': 0.2, 'Shopping': 0.1 },
+    keywords: ['adventure', 'challenging', 'extreme', 'outdoor', 'thrilling'],
+    energyBoost: 0.3
+  },
+  'romantic': {
+    categories: { 'Restaurant': 0.9, 'Cafe': 0.8, 'Sightseeing': 0.7, 'Temple': 0.4, 'Shopping': 0.5 },
+    keywords: ['romantic', 'intimate', 'beautiful', 'scenic', 'cozy'],
+    energyBoost: 0.0
+  },
+  'tired': {
+    categories: { 'Cafe': 0.9, 'Temple': 0.8, 'Restaurant': 0.7, 'Sightseeing': 0.3, 'Shopping': 0.2 },
+    keywords: ['comfortable', 'cozy', 'peaceful', 'quiet', 'relaxing'],
+    energyBoost: -0.2
+  },
+  'social': {
+    categories: { 'Restaurant': 0.9, 'Cafe': 0.8, 'Shopping': 0.7, 'Sightseeing': 0.5, 'Temple': 0.3 },
+    keywords: ['social', 'lively', 'vibrant', 'crowded', 'popular'],
+    energyBoost: 0.1
+  }
+};
 
-      // Sort by recommendation score
-      const sortedPlaces = scoredPlaces.sort((a, b) => b.recommendationScore - a.recommendationScore);
+// Interest-based scoring
+const INTEREST_SCORING = {
+  'relax': { categories: { 'Temple': 0.9, 'Cafe': 0.8, 'Sightseeing': 0.6 }, keywords: ['peaceful', 'serene', 'calm'] },
+  'eat': { categories: { 'Restaurant': 1.0, 'Cafe': 0.7, 'Shopping': 0.3 }, keywords: ['food', 'delicious', 'cuisine'] },
+  'sightseeing': { categories: { 'Sightseeing': 1.0, 'Temple': 0.8, 'Cafe': 0.4 }, keywords: ['beautiful', 'scenic', 'view'] },
+  'shop': { categories: { 'Shopping': 1.0, 'Cafe': 0.5, 'Restaurant': 0.4 }, keywords: ['shopping', 'market', 'mall'] },
+  'adventure': { categories: { 'Adventure': 1.0, 'Sightseeing': 0.6, 'Cafe': 0.2 }, keywords: ['adventure', 'thrilling', 'exciting'] },
+  'culture': { categories: { 'Temple': 0.9, 'Sightseeing': 0.8, 'Cafe': 0.4 }, keywords: ['historical', 'cultural', 'traditional'] }
+};
 
-      // Apply additional filters and enhancements
-      const enhancedPlaces = this.enhancePlaceRecommendations(sortedPlaces, userPreferences);
+// Budget scoring
+const BUDGET_SCORING = {
+  'low': { maxPrice: 1, weight: 0.8 },
+  'medium': { maxPrice: 2, weight: 0.6 },
+  'high': { maxPrice: 3, weight: 0.4 }
+};
 
-      // Generate different recommendation categories
-      const recommendations = {
-        topRecommendations: enhancedPlaces.slice(0, 10),
-        byCategory: this.groupRecommendationsByCategory(enhancedPlaces),
-        itinerary: this.generateItinerary(enhancedPlaces.slice(0, 5), userPreferences),
-        surpriseMe: this.generateSurpriseRecommendations(enhancedPlaces, userPreferences),
-        nearby: this.getNearbyRecommendations(enhancedPlaces, userLocation),
-        trending: this.getTrendingRecommendations(enhancedPlaces)
+// Transport mode preferences
+const TRANSPORT_SCORING = {
+  'walk': { maxDistance: 2, weight: 1.0 },
+  'bike': { maxDistance: 5, weight: 0.8 },
+  'car': { maxDistance: 20, weight: 0.6 },
+  'public': { maxDistance: 10, weight: 0.7 }
+};
+
+// Social mode preferences
+const SOCIAL_SCORING = {
+  'solo': { keywords: ['peaceful', 'quiet', 'cozy'], categories: { 'Temple': 0.9, 'Cafe': 0.8 } },
+  'friends': { keywords: ['lively', 'fun', 'social'], categories: { 'Restaurant': 0.9, 'Shopping': 0.8 } },
+  'family': { keywords: ['family', 'safe', 'comfortable'], categories: { 'Sightseeing': 0.9, 'Temple': 0.8 } },
+  'date': { keywords: ['romantic', 'intimate', 'beautiful'], categories: { 'Restaurant': 0.9, 'Cafe': 0.8 } }
+};
+
+// Parse distance from string (e.g., "1.5 km" -> 1.5)
+const parseDistance = (distanceStr) => {
+  if (!distanceStr) return 0;
+  const match = distanceStr.match(/(\d+(?:\.\d+)?)\s*km/);
+  return match ? parseFloat(match[1]) : 0;
+};
+
+// Calculate base score for a place based on user preferences
+const calculateBaseScore = (place, preferences) => {
+  let score = 0;
+  const { mood, interests = [], energyLevel, budget, transport, socialMode } = preferences;
+  
+  // Mood-based scoring
+  const moodConfig = MOOD_SCORING[mood] || MOOD_SCORING['happy'];
+  const categoryScore = moodConfig.categories[place.category] || 0;
+  score += categoryScore * 30;
+  
+  // Interest-based scoring
+  interests.forEach(interest => {
+    const interestConfig = INTEREST_SCORING[interest];
+    if (interestConfig) {
+      const interestCategoryScore = interestConfig.categories[place.category] || 0;
+      score += interestCategoryScore * 20;
+    }
+  });
+  
+  // Energy level scoring
+  const energyConfig = ENERGY_LEVELS[energyLevel] || ENERGY_LEVELS['medium'];
+  const distance = parseDistance(place.distance);
+  if (distance <= energyConfig.maxDistance) {
+    score += 25;
+  } else {
+    score -= (distance - energyConfig.maxDistance) * 5;
+  }
+  
+  // Budget scoring
+  const budgetConfig = BUDGET_SCORING[budget] || BUDGET_SCORING['medium'];
+  const placePrice = place.price === '$' ? 1 : place.price === '$$' ? 2 : 3;
+  if (placePrice <= budgetConfig.maxPrice) {
+    score += 20;
+  }
+  
+  // Transport scoring
+  const transportConfig = TRANSPORT_SCORING[transport] || TRANSPORT_SCORING['car'];
+  if (distance <= transportConfig.maxDistance) {
+    score += 15;
+  }
+  
+  // Social mode scoring
+  const socialConfig = SOCIAL_SCORING[socialMode] || SOCIAL_SCORING['solo'];
+  const socialCategoryScore = socialConfig.categories[place.category] || 0;
+  score += socialCategoryScore * 15;
+  
+  // Rating boost
+  if (place.rating) {
+    score += (place.rating - 3) * 5; // Boost for ratings above 3
+  }
+  
+  return Math.max(0, score);
+};
+
+// Add randomization to prevent repetitive results
+const addRandomization = (score, place, preferences) => {
+  // Small random factor (0.8 to 1.2)
+  const randomFactor = 0.8 + Math.random() * 0.4;
+  
+  // Time-based rotation (changes every hour)
+  const hour = new Date().getHours();
+  const timeRotation = Math.sin(hour * 0.1) * 0.1;
+  
+  // Place ID-based rotation for variety
+  const idRotation = Math.sin(place.id * 0.5) * 0.05;
+  
+  return score * randomFactor + timeRotation + idRotation;
+};
+
+// Generate match reason for a place
+const generateMatchReason = (place, preferences) => {
+  const reasons = [];
+  const { mood, interests = [], energyLevel, socialMode } = preferences;
+  
+  // Mood-based reasons
+  const moodConfig = MOOD_SCORING[mood];
+  if (moodConfig && moodConfig.categories[place.category] > 0.7) {
+    reasons.push(`Perfect for ${mood} mood`);
+  }
+  
+  // Interest-based reasons
+  interests.forEach(interest => {
+    const interestConfig = INTEREST_SCORING[interest];
+    if (interestConfig && interestConfig.categories[place.category] > 0.7) {
+      reasons.push(`Matches your ${interest} interest`);
+    }
+  });
+  
+  // Energy level reasons
+  const distance = parseDistance(place.distance);
+  const energyConfig = ENERGY_LEVELS[energyLevel];
+  if (distance <= energyConfig.maxDistance) {
+    reasons.push(`Perfect distance for ${energyLevel} energy`);
+  }
+  
+  // Social mode reasons
+  const socialConfig = SOCIAL_SCORING[socialMode];
+  if (socialConfig && socialConfig.categories[place.category] > 0.7) {
+    reasons.push(`Great for ${socialMode} visits`);
+  }
+  
+  // Rating reasons
+  if (place.rating && place.rating > 4.0) {
+    reasons.push(`Highly rated (${place.rating}/5)`);
+  }
+  
+  return reasons.length > 0 ? reasons.join(', ') : 'Good match for your preferences';
+};
+
+// Main recommendation function
+const getRecommendations = (userPreferences) => {
+  try {
+    // Load places data
+    const places = loadPlacesData();
+    if (!places || places.length === 0) {
+      return {
+        success: false,
+        error: 'No places data available',
+        recommendations: []
       };
-
-      return recommendations;
-    } catch (error) {
-      console.error('Error generating recommendations:', error);
-      throw error;
     }
-  }
-
-  /**
-   * Calculate recommendation score for a place
-   */
-  calculateRecommendationScore(place, preferences, userLocation) {
-    let score = 0;
-    const { mood, interests, energyLevel, budget, transport, socialMode, accessibility } = preferences;
-
-    // Base score from place rating
-    score += place.rating * 10;
-
-    // Distance factor (closer is better, but not too close)
-    const distanceScore = this.calculateDistanceScore(place.distance, energyLevel, transport);
-    score += distanceScore;
-
-    // Mood matching
-    const moodScore = this.calculateMoodScore(place, mood);
-    score += moodScore;
-
-    // Interest matching
-    const interestScore = this.calculateInterestScore(place, interests);
-    score += interestScore;
-
-    // Budget compatibility
-    const budgetScore = this.calculateBudgetScore(place, budget);
-    score += budgetScore;
-
-    // Social mode compatibility
-    const socialScore = this.calculateSocialScore(place, socialMode);
-    score += socialScore;
-
-    // Accessibility compatibility
-    const accessibilityScore = this.calculateAccessibilityScore(place, accessibility);
-    score += accessibilityScore;
-
-    // Time-based factors
-    const timeScore = this.calculateTimeBasedScore(place);
-    score += timeScore;
-
-    // Food type matching (if applicable)
-    const foodScore = this.calculateFoodTypeScore(place, preferences.foodTypes);
-    score += foodScore;
-
-    // Popularity boost
-    const popularityScore = this.calculatePopularityScore(place);
-    score += popularityScore;
-
-    return Math.max(0, score); // Ensure non-negative score
-  }
-
-  /**
-   * Calculate distance-based score
-   */
-  calculateDistanceScore(distance, energyLevel, transport) {
-    const maxDistance = this.getMaxDistanceForEnergyLevel(energyLevel, transport);
     
-    if (distance > maxDistance) {
-      return -10; // Penalty for being too far
+    // Validate user preferences
+    if (!userPreferences || !userPreferences.mood) {
+      return {
+        success: false,
+        error: 'Invalid user preferences',
+        recommendations: []
+      };
     }
-
-    // Optimal distance range based on energy level
-    let optimalMin, optimalMax;
-    if (energyLevel < 33) {
-      optimalMin = 100; // Very close
-      optimalMax = 500;
-    } else if (energyLevel < 66) {
-      optimalMin = 200;
-      optimalMax = 1500;
-    } else {
-      optimalMin = 500;
-      optimalMax = 3000;
-    }
-
-    if (distance >= optimalMin && distance <= optimalMax) {
-      return 15; // Bonus for optimal distance
-    } else if (distance < optimalMin) {
-      return 5; // Slight bonus for very close
-    } else {
-      return Math.max(-5, 10 - (distance / 1000)); // Decreasing score with distance
-    }
-  }
-
-  /**
-   * Calculate mood-based score
-   */
-  calculateMoodScore(place, mood) {
-    const moodMappings = {
-      'happy': {
-        'Restaurant': 8,
-        'Cafe': 6,
-        'Park': 7,
-        'Bar': 5,
-        'Entertainment': 10,
-        'Shopping': 4
-      },
-      'tired': {
-        'Cafe': 10,
-        'Park': 8,
-        'Restaurant': 6,
-        'Spa': 9,
-        'Hotel': 7
-      },
-      'calm': {
-        'Park': 10,
-        'Cafe': 8,
-        'Temple': 9,
-        'Library': 7,
-        'Restaurant': 5
-      },
-      'romantic': {
-        'Restaurant': 10,
-        'Cafe': 8,
-        'Park': 7,
-        'Bar': 6,
-        'Hotel': 5
-      },
-      'sad': {
-        'Park': 9,
-        'Cafe': 8,
-        'Temple': 7,
-        'Restaurant': 6,
-        'Entertainment': 4
-      },
-      'excited': {
-        'Entertainment': 10,
-        'Bar': 8,
-        'Restaurant': 6,
-        'Park': 5,
-        'Shopping': 4
-      }
-    };
-
-    return moodMappings[mood]?.[place.category] || 0;
-  }
-
-  /**
-   * Calculate interest-based score
-   */
-  calculateInterestScore(place, interests) {
-    const interestMappings = {
-      'eat': ['Restaurant', 'Cafe', 'Bar', 'Fast Food'],
-      'relax': ['Cafe', 'Park', 'Spa', 'Hotel'],
-      'play': ['Playground', 'Park', 'Gym', 'Entertainment'],
-      'sightseeing': ['Attraction', 'Museum', 'Park', 'Temple'],
-      'nature': ['Park', 'Zoo', 'Aquarium', 'Garden'],
-      'sports': ['Gym', 'Stadium', 'Park', 'Sports Center'],
-      'events': ['Bar', 'Entertainment', 'Restaurant', 'Concert Hall']
-    };
-
-    let score = 0;
-    interests.forEach(interest => {
-      if (interestMappings[interest]?.includes(place.category)) {
-        score += 8;
-      }
-    });
-
-    return score;
-  }
-
-  /**
-   * Calculate budget compatibility score
-   */
-  calculateBudgetScore(place, budget) {
-    if (budget === 0) return 0; // No budget constraint
-
-    const budgetLevel = this.getBudgetLevel(budget);
-    const placePriceLevel = place.priceLevel || 2;
-
-    if (budgetLevel >= placePriceLevel) {
-      return 5; // Within budget
-    } else {
-      return -10; // Over budget
-    }
-  }
-
-  /**
-   * Calculate social mode compatibility score
-   */
-  calculateSocialScore(place, socialMode) {
-    const socialMappings = {
-      'solo': {
-        'Cafe': 8,
-        'Park': 7,
-        'Restaurant': 6,
-        'Library': 9,
-        'Museum': 8
-      },
-      'friends': {
-        'Restaurant': 9,
-        'Bar': 8,
-        'Entertainment': 10,
-        'Park': 7,
-        'Shopping': 6
-      }
-    };
-
-    return socialMappings[socialMode]?.[place.category] || 0;
-  }
-
-  /**
-   * Calculate accessibility compatibility score
-   */
-  calculateAccessibilityScore(place, accessibility) {
-    let score = 0;
-
-    if (accessibility.includes('wheelchair') && place.wheelchairAccessible) {
-      score += 10;
-    } else if (accessibility.includes('wheelchair') && !place.wheelchairAccessible) {
-      score -= 15;
-    }
-
-    if (accessibility.includes('pet') && place.petFriendly) {
-      score += 5;
-    } else if (accessibility.includes('pet') && !place.petFriendly) {
-      score -= 5;
-    }
-
-    if (accessibility.includes('kid') && place.kidFriendly) {
-      score += 5;
-    } else if (accessibility.includes('kid') && !place.kidFriendly) {
-      score -= 5;
-    }
-
-    return score;
-  }
-
-  /**
-   * Calculate time-based score
-   */
-  calculateTimeBasedScore(place) {
-    const currentHour = moment().hour();
-    let score = 0;
-
-    // Time-based preferences
-    if (currentHour >= 6 && currentHour < 10) {
-      // Morning - prefer cafes, parks
-      if (['Cafe', 'Park'].includes(place.category)) score += 5;
-    } else if (currentHour >= 10 && currentHour < 14) {
-      // Late morning/early afternoon - prefer restaurants, attractions
-      if (['Restaurant', 'Attraction', 'Museum'].includes(place.category)) score += 5;
-    } else if (currentHour >= 14 && currentHour < 18) {
-      // Afternoon - prefer parks, cafes, shopping
-      if (['Park', 'Cafe', 'Shopping'].includes(place.category)) score += 5;
-    } else if (currentHour >= 18 && currentHour < 22) {
-      // Evening - prefer restaurants, bars, entertainment
-      if (['Restaurant', 'Bar', 'Entertainment'].includes(place.category)) score += 5;
-    } else {
-      // Late night - prefer bars, entertainment
-      if (['Bar', 'Entertainment'].includes(place.category)) score += 5;
-    }
-
-    return score;
-  }
-
-  /**
-   * Calculate food type compatibility score
-   */
-  calculateFoodTypeScore(place, foodTypes) {
-    if (!foodTypes || foodTypes.length === 0) return 0;
-    if (!['Restaurant', 'Cafe', 'Bar', 'Fast Food'].includes(place.category)) return 0;
-
-    const foodTypeMappings = {
-      'junk': ['Fast Food', 'Bar'],
-      'home': ['Restaurant'],
-      'desserts': ['Cafe', 'Restaurant']
-    };
-
-    let score = 0;
-    foodTypes.forEach(foodType => {
-      if (foodTypeMappings[foodType]?.includes(place.category)) {
-        score += 6;
-      }
-    });
-
-    return score;
-  }
-
-  /**
-   * Calculate popularity score
-   */
-  calculatePopularityScore(place) {
-    // Higher rating = more popular
-    const ratingScore = (place.rating - 3) * 5; // Scale rating to score
     
-    // Distance penalty for very close places (might be too crowded)
-    const distancePenalty = place.distance < 100 ? -2 : 0;
-    
-    return ratingScore + distancePenalty;
-  }
-
-  /**
-   * Enhance place recommendations with additional data
-   */
-  enhancePlaceRecommendations(places, preferences) {
-    return places.map(place => {
-      const enhanced = { ...place };
-
-      // Add mood match description
-      enhanced.moodMatch = this.generateMoodMatchDescription(place, preferences.mood);
-      enhanced.moodEmoji = this.getMoodEmoji(place, preferences.mood);
-
-      // Add time estimates
-      enhanced.timeEstimate = this.calculateTimeEstimate(place, preferences);
+    // Calculate scores for all places
+    const scoredPlaces = places.map(place => {
+      const baseScore = calculateBaseScore(place, userPreferences);
+      const finalScore = addRandomization(baseScore, place, userPreferences);
+      const matchReason = generateMatchReason(place, userPreferences);
       
-      // Add cost estimate
-      enhanced.costEstimate = this.calculateCostEstimate(place, preferences);
-
-      // Add accessibility info
-      enhanced.accessibilityInfo = this.generateAccessibilityInfo(place, preferences.accessibility);
-
-      // Add tags based on preferences
-      enhanced.relevantTags = this.generateRelevantTags(place, preferences);
-
-      return enhanced;
+      return {
+        ...place,
+        finalScore: Math.round(finalScore * 100) / 100,
+        matchReason,
+        baseScore: Math.round(baseScore * 100) / 100,
+        score: Math.round(finalScore * 100) / 100 // Add this for compatibility
+      };
     });
-  }
-
-  /**
-   * Generate mood match description
-   */
-  generateMoodMatchDescription(place, mood) {
-    const descriptions = {
-      'happy': {
-        'Restaurant': 'Perfect for celebrating!',
-        'Cafe': 'Great for a cheerful coffee break',
-        'Park': 'Ideal for outdoor happiness',
-        'Bar': 'Perfect for socializing',
-        'Entertainment': 'Guaranteed to lift your spirits!'
-      },
-      'tired': {
-        'Cafe': 'Perfect for a relaxing break',
-        'Park': 'Great for peaceful rest',
-        'Restaurant': 'Comfort food awaits',
-        'Spa': 'Just what you need to unwind',
-        'Hotel': 'Perfect for a quick rest'
-      },
-      'calm': {
-        'Park': 'Perfect for peaceful moments',
-        'Cafe': 'Ideal for quiet reflection',
-        'Temple': 'Great for inner peace',
-        'Library': 'Perfect for quiet time',
-        'Restaurant': 'Calm dining experience'
-      },
-      'romantic': {
-        'Restaurant': 'Perfect for a romantic dinner',
-        'Cafe': 'Ideal for intimate conversations',
-        'Park': 'Great for romantic walks',
-        'Bar': 'Perfect for date night',
-        'Hotel': 'Romantic getaway spot'
-      },
-      'sad': {
-        'Park': 'Nature can be healing',
-        'Cafe': 'Comfort in a cup',
-        'Temple': 'Peaceful reflection space',
-        'Restaurant': 'Comfort food for the soul',
-        'Entertainment': 'Might help lift your mood'
-      },
-      'excited': {
-        'Entertainment': 'Perfect for your energy!',
-        'Bar': 'Great for socializing',
-        'Restaurant': 'Perfect for celebrations',
-        'Park': 'Great for active fun',
-        'Shopping': 'Perfect for retail therapy'
-      }
-    };
-
-    return descriptions[mood]?.[place.category] || 'Great choice for your mood!';
-  }
-
-  /**
-   * Get mood emoji for place
-   */
-  getMoodEmoji(place, mood) {
-    const emojis = {
-      'happy': {
-        'Restaurant': '😊',
-        'Cafe': '☕',
-        'Park': '🌞',
-        'Bar': '🍻',
-        'Entertainment': '🎉'
-      },
-      'tired': {
-        'Cafe': '😴',
-        'Park': '🌙',
-        'Restaurant': '🍲',
-        'Spa': '🧘',
-        'Hotel': '🛏️'
-      },
-      'calm': {
-        'Park': '🌸',
-        'Cafe': '🧘',
-        'Temple': '🕯️',
-        'Library': '📚',
-        'Restaurant': '🍵'
-      },
-      'romantic': {
-        'Restaurant': '💕',
-        'Cafe': '💖',
-        'Park': '🌹',
-        'Bar': '🍷',
-        'Hotel': '💑'
-      },
-      'sad': {
-        'Park': '🌧️',
-        'Cafe': '☕',
-        'Temple': '🕊️',
-        'Restaurant': '🍜',
-        'Entertainment': '🎭'
-      },
-      'excited': {
-        'Entertainment': '🤩',
-        'Bar': '🎊',
-        'Restaurant': '🎉',
-        'Park': '🏃',
-        'Shopping': '🛍️'
-      }
-    };
-
-    return emojis[mood]?.[place.category] || '📍';
-  }
-
-  /**
-   * Calculate time estimate for visiting a place
-   */
-  calculateTimeEstimate(place, preferences) {
-    const baseTimes = {
-      'Restaurant': 60,
-      'Cafe': 30,
-      'Bar': 90,
-      'Park': 45,
-      'Museum': 120,
-      'Shopping': 90,
-      'Entertainment': 120,
-      'Temple': 30,
-      'Hotel': 0,
-      'Spa': 90
-    };
-
-    let time = baseTimes[place.category] || 30;
-
-    // Adjust based on social mode
-    if (preferences.socialMode === 'friends') {
-      time *= 1.5;
-    }
-
-    // Adjust based on energy level
-    if (preferences.energyLevel < 33) {
-      time *= 0.7; // Shorter visits when tired
-    } else if (preferences.energyLevel > 66) {
-      time *= 1.3; // Longer visits when energetic
-    }
-
-    return Math.round(time);
-  }
-
-  /**
-   * Calculate cost estimate
-   */
-  calculateCostEstimate(place, preferences) {
-    const baseCosts = {
-      1: 5,   // Very cheap
-      2: 15,  // Cheap
-      3: 35,  // Moderate
-      4: 75   // Expensive
-    };
-
-    let cost = baseCosts[place.priceLevel] || 20;
-
-    // Adjust based on social mode
-    if (preferences.socialMode === 'friends') {
-      cost *= 1.5;
-    }
-
-    // Adjust based on category
-    if (['Park', 'Temple'].includes(place.category)) {
-      cost = 0; // Free
-    }
-
-    return Math.round(cost);
-  }
-
-  /**
-   * Generate accessibility information
-   */
-  generateAccessibilityInfo(place, accessibility) {
-    const info = [];
-
-    if (place.wheelchairAccessible) {
-      info.push('♿ Wheelchair accessible');
-    }
-    if (place.petFriendly) {
-      info.push('🐶 Pet-friendly');
-    }
-    if (place.kidFriendly) {
-      info.push('👶 Kid-friendly');
-    }
-
-    return info;
-  }
-
-  /**
-   * Generate relevant tags based on preferences
-   */
-  generateRelevantTags(place, preferences) {
-    const tags = [...(place.tags || [])];
-
-    // Add mood-based tags
-    if (preferences.mood === 'calm') {
-      tags.push('Quiet', 'Peaceful');
-    } else if (preferences.mood === 'excited') {
-      tags.push('Energetic', 'Fun');
-    }
-
-    // Add social mode tags
-    if (preferences.socialMode === 'solo') {
-      tags.push('Solo-friendly');
-    } else if (preferences.socialMode === 'friends') {
-      tags.push('Group-friendly');
-    }
-
-    return [...new Set(tags)]; // Remove duplicates
-  }
-
-  /**
-   * Group recommendations by category
-   */
-  groupRecommendationsByCategory(places) {
-    return _.groupBy(places, 'category');
-  }
-
-  /**
-   * Generate itinerary from top recommendations
-   */
-  generateItinerary(topPlaces, preferences) {
-    if (topPlaces.length === 0) return null;
-
-    const itinerary = {
-      totalTime: 0,
-      totalDistance: 0,
-      totalCost: 0,
-      stops: []
-    };
-
-    topPlaces.forEach((place, index) => {
-      const timeEstimate = this.calculateTimeEstimate(place, preferences);
-      const costEstimate = this.calculateCostEstimate(place, preferences);
-
-      itinerary.stops.push({
-        order: index + 1,
-        place: place,
-        timeEstimate: timeEstimate,
-        costEstimate: costEstimate,
-        description: this.generateStopDescription(place, index, preferences)
-      });
-
-      itinerary.totalTime += timeEstimate;
-      itinerary.totalCost += costEstimate;
-    });
-
-    // Calculate total distance (simplified)
-    itinerary.totalDistance = topPlaces.reduce((total, place) => total + place.distance, 0);
-
-    return itinerary;
-  }
-
-  /**
-   * Generate stop description for itinerary
-   */
-  generateStopDescription(place, index, preferences) {
-    const descriptions = [
-      `Start your journey at ${place.name}`,
-      `Continue to ${place.name}`,
-      `Next, visit ${place.name}`,
-      `Then explore ${place.name}`,
-      `Finally, end at ${place.name}`
-    ];
-
-    return descriptions[index] || `Visit ${place.name}`;
-  }
-
-  /**
-   * Generate surprise recommendations
-   */
-  generateSurpriseRecommendations(places, preferences) {
-    // Shuffle places and return a random selection
-    const shuffled = _.shuffle(places);
-    return shuffled.slice(0, 3).map(place => ({
-      ...place,
-      surpriseReason: this.generateSurpriseReason(place, preferences)
-    }));
-  }
-
-  /**
-   * Generate surprise reason
-   */
-  generateSurpriseReason(place, preferences) {
-    const reasons = [
-      'Hidden gem in your area!',
-      'Perfect for trying something new',
-      'Unexpectedly matches your vibe',
-      'Local favorite you might have missed',
-      'Great for spontaneous adventures'
-    ];
-
-    return reasons[Math.floor(Math.random() * reasons.length)];
-  }
-
-  /**
-   * Get nearby recommendations
-   */
-  getNearbyRecommendations(places, userLocation) {
-    return places
-      .filter(place => place.distance <= 1000) // Within 1km
-      .slice(0, 5);
-  }
-
-  /**
-   * Get trending recommendations
-   */
-  getTrendingRecommendations(places) {
-    return places
-      .filter(place => place.rating >= 4.5) // High-rated places
-      .slice(0, 5);
-  }
-
-  /**
-   * Helper methods
-   */
-  getMaxDistanceForEnergyLevel(energyLevel, transport) {
-    const baseDistance = this.getRadiusForEnergyLevel(energyLevel);
     
-    switch (transport) {
-      case 'walk':
-        return Math.min(baseDistance, 1000);
-      case 'bike':
-        return Math.min(baseDistance, 5000);
-      case 'car':
-      case 'uber':
-        return baseDistance;
-      default:
-        return baseDistance;
+    // Sort by final score and get top 6
+    const topRecommendations = scoredPlaces
+      .sort((a, b) => b.finalScore - a.finalScore)
+      .slice(0, 6);
+    
+    // Add variety by occasionally rotating top results
+    if (Math.random() < 0.3) { // 30% chance to rotate
+      const [first, ...rest] = topRecommendations;
+      const rotated = [...rest, first];
+      return {
+        success: true,
+        recommendations: rotated,
+        totalPlaces: places.length,
+        userPreferences,
+        generatedAt: new Date().toISOString()
+      };
     }
-  }
-
-  getRadiusForEnergyLevel(energyLevel) {
-    if (energyLevel < 33) return 500;
-    if (energyLevel < 66) return 2000;
-    return 10000;
-  }
-
-  getBudgetLevel(budget) {
-    if (budget < 20) return 1;
-    if (budget < 50) return 2;
-    if (budget < 100) return 3;
-    return 4;
-  }
-
-  /**
-   * Initialize mood profiles
-   */
-  initializeMoodProfiles() {
+    
     return {
-      happy: { energy: 'high', social: 'outgoing', preference: 'fun' },
-      tired: { energy: 'low', social: 'quiet', preference: 'rest' },
-      calm: { energy: 'low', social: 'peaceful', preference: 'serenity' },
-      romantic: { energy: 'medium', social: 'intimate', preference: 'romance' },
-      sad: { energy: 'low', social: 'solitary', preference: 'comfort' },
-      excited: { energy: 'high', social: 'outgoing', preference: 'adventure' }
+      success: true,
+      recommendations: topRecommendations,
+      totalPlaces: places.length,
+      userPreferences,
+      generatedAt: new Date().toISOString()
+    };
+    
+  } catch (error) {
+    console.error('Error in getRecommendations:', error);
+    return {
+      success: false,
+      error: error.message,
+      recommendations: []
     };
   }
+};
 
-  /**
-   * Initialize interest weights
-   */
-  initializeInterestWeights() {
-    return {
-      eat: { weight: 1.0, categories: ['Restaurant', 'Cafe', 'Bar'] },
-      relax: { weight: 0.8, categories: ['Cafe', 'Park', 'Spa'] },
-      play: { weight: 1.2, categories: ['Playground', 'Park', 'Entertainment'] },
-      sightseeing: { weight: 1.1, categories: ['Attraction', 'Museum', 'Park'] },
-      nature: { weight: 0.9, categories: ['Park', 'Zoo', 'Garden'] },
-      sports: { weight: 1.3, categories: ['Gym', 'Stadium', 'Park'] },
-      events: { weight: 1.4, categories: ['Bar', 'Entertainment', 'Concert Hall'] }
-    };
+// API route handler
+const recommendPlaces = async (req, res) => {
+  try {
+    const preferences = req.body;
+    const result = getRecommendations(preferences);
+    
+    if (result.success) {
+      res.json({
+        success: true,
+        data: result,
+        message: `Found ${result.recommendations.length} personalized recommendations`
+      });
+    } else {
+      res.status(400).json({
+        success: false,
+        error: result.error,
+        message: 'Failed to generate recommendations'
+      });
+    }
+  } catch (error) {
+    console.error('Error in recommendPlaces:', error);
+    res.status(500).json({
+      success: false,
+      error: 'Internal server error',
+      message: 'Failed to process recommendation request'
+    });
   }
+};
 
-  /**
-   * Initialize time-based factors
-   */
-  initializeTimeBasedFactors() {
-    return {
-      morning: { preferred: ['Cafe', 'Park'], avoided: ['Bar', 'Entertainment'] },
-      afternoon: { preferred: ['Restaurant', 'Museum'], avoided: ['Bar'] },
-      evening: { preferred: ['Restaurant', 'Bar'], avoided: ['Park'] },
-      night: { preferred: ['Bar', 'Entertainment'], avoided: ['Park', 'Museum'] }
-    };
-  }
-}
+// Get user preferences from request
+const getUserPreferencesFromRequest = (req) => {
+  return req.body || {};
+};
 
-module.exports = new RecommendationService();
+module.exports = {
+  getRecommendations,
+  recommendPlaces,
+  getUserPreferencesFromRequest,
+  loadPlacesData
+};

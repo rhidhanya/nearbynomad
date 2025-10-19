@@ -1,10 +1,12 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Compass, Settings, Share2, BookOpen, Trophy } from "lucide-react";
+import { Compass, Settings, Share2, BookOpen, Trophy, Edit, LogOut, User, MapPin, Clock, Star } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Example StoryCard component
 function StoryCard() {
@@ -70,6 +72,32 @@ function GamificationWidget() {
 }
 
 export default function ProfilePage() {
+  const router = useRouter();
+  const [userData, setUserData] = useState({
+    name: "Rhidhanya",
+    level: 8,
+    xp: 1247,
+    totalPlaces: 23,
+    favoriteCategories: ["Cafe", "Sightseeing", "Temple"]
+  });
+
+  const [recentAdventures, setRecentAdventures] = useState([
+    { place: "Marudhamalai Temple", time: "2 hours ago", mood: "🙏", rating: 4.8 },
+    { place: "Siruvani Waterfalls", time: "Yesterday", mood: "💧", rating: 4.9 },
+    { place: "VOC Park & Zoo", time: "2 days ago", mood: "🦁", rating: 4.4 },
+  ]);
+
+  const handleLogout = () => {
+    localStorage.removeItem("userPreferences");
+    localStorage.removeItem("userData");
+    router.push("/login");
+  };
+
+  const handleEditProfile = () => {
+    // TODO: Implement profile editing
+    alert("Profile editing coming soon!");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
       <div className="container mx-auto max-w-4xl space-y-8">
@@ -84,13 +112,24 @@ export default function ProfilePage() {
               Back to Explore
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            size="icon"
-            className="rounded-lg border-gray-300 bg-white hover:bg-gray-200 transition-all duration-300"
-          >
-            <Settings className="w-5 h-5 text-gray-800" />
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleEditProfile}
+              className="rounded-lg border-gray-300 bg-white hover:bg-gray-200 transition-all duration-300"
+            >
+              <Edit className="w-5 h-5 text-gray-800" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={handleLogout}
+              className="rounded-lg border-gray-300 bg-white hover:bg-gray-200 transition-all duration-300"
+            >
+              <LogOut className="w-5 h-5 text-gray-800" />
+            </Button>
+          </div>
         </div>
 
         {/* Profile Header */}
@@ -102,14 +141,17 @@ export default function ProfilePage() {
             </Avatar>
 
             <div className="flex-1 text-center md:text-left space-y-3">
-              <h1 className="text-4xl font-bold text-black">Rhidhanya</h1>
+              <h1 className="text-4xl font-bold text-black">{userData.name}</h1>
               <p className="text-lg text-gray-600">Local Explorer • Mood Adventurer</p>
               <div className="flex flex-wrap gap-2 justify-center md:justify-start">
                 <div className="px-3 py-1 rounded-lg bg-gray-200 text-gray-800 text-sm font-medium">
-                  Level 8
+                  Level {userData.level}
                 </div>
                 <div className="px-3 py-1 rounded-lg bg-gray-200 text-gray-800 text-sm font-medium">
-                  1,247 XP
+                  {userData.xp.toLocaleString()} XP
+                </div>
+                <div className="px-3 py-1 rounded-lg bg-gray-200 text-gray-800 text-sm font-medium">
+                  {userData.totalPlaces} Places Visited
                 </div>
               </div>
             </div>
@@ -153,11 +195,7 @@ export default function ProfilePage() {
           <Card className="p-6 rounded-lg border border-gray-300 bg-white shadow-lg">
             <h2 className="text-xl font-semibold text-black mb-4">Recent Adventures</h2>
             <div className="space-y-3">
-              {[
-                { place: "Sunset Cafe", time: "2 hours ago", mood: "🌙" },
-                { place: "Green Valley Park", time: "Yesterday", mood: "🌿" },
-                { place: "The Burger Joint", time: "2 days ago", mood: "🍔" },
-              ].map((adventure, i) => (
+              {recentAdventures.map((adventure, i) => (
                 <div
                   key={i}
                   className="flex items-center gap-4 p-4 rounded-lg bg-gray-100 hover:bg-gray-200 transition-all duration-300"
@@ -165,7 +203,14 @@ export default function ProfilePage() {
                   <div className="text-3xl">{adventure.mood}</div>
                   <div className="flex-1">
                     <p className="font-semibold text-black">{adventure.place}</p>
-                    <p className="text-sm text-gray-600">{adventure.time}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <Clock className="w-4 h-4 text-gray-500" />
+                      <p className="text-sm text-gray-600">{adventure.time}</p>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-4 h-4 text-yellow-500 fill-current" />
+                        <span className="text-sm text-gray-600">{adventure.rating}</span>
+                      </div>
+                    </div>
                   </div>
                   <Button
                     variant="outline"
@@ -176,6 +221,28 @@ export default function ProfilePage() {
                   </Button>
                 </div>
               ))}
+            </div>
+          </Card>
+
+          {/* Stats Overview */}
+          <Card className="p-6 rounded-lg border border-gray-300 bg-white shadow-lg">
+            <h2 className="text-xl font-semibold text-black mb-4">Your Exploration Stats</h2>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="text-center p-4 rounded-lg bg-blue-50 border border-blue-200">
+                <MapPin className="w-8 h-8 text-blue-600 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-blue-800">{userData.totalPlaces}</p>
+                <p className="text-sm text-blue-600">Places Explored</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-green-50 border border-green-200">
+                <Trophy className="w-8 h-8 text-green-600 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-green-800">{userData.level}</p>
+                <p className="text-sm text-green-600">Explorer Level</p>
+              </div>
+              <div className="text-center p-4 rounded-lg bg-purple-50 border border-purple-200">
+                <Star className="w-8 h-8 text-purple-600 mx-auto mb-2" />
+                <p className="text-2xl font-bold text-purple-800">{userData.favoriteCategories.length}</p>
+                <p className="text-sm text-purple-600">Favorite Categories</p>
+              </div>
             </div>
           </Card>
         </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -21,41 +21,34 @@ import {
   Users,
   Calendar,
 } from "lucide-react";
+import places from "@/data/places.json";
+import { useParams } from "next/navigation";
 
-// Mock place data
-const placeData = {
-  id: 1,
-  name: "Sunset Cafe",
-  category: "Cafe",
-  image: "https://images.unsplash.com/photo-1495474472287-4d71bcdd6e6b?auto=format&fit=crop&w=800&h=500",
-  images: [
-    "https://images.unsplash.com/photo-1495474472287-4d71bcdd6e6b?auto=format&fit=crop&w=800&h=500",
-    "https://images.unsplash.com/photo-1511920170033-f8396924c312?auto=format&fit=crop&w=800&h=500",
-    "https://images.unsplash.com/photo-1447933608146-09ea0d2a7b65?auto=format&fit=crop&w=800&h=500",
-  ],
-  distance: "0.8 km",
-  time: "10 min walk",
-  price: "$$",
-  moodMatch: "Your cozy escape for a calm day",
-  moodEmoji: "🌙",
-  rating: 4.5,
-  reviews: 127,
-  tags: ["Cozy", "Quiet", "WiFi"],
-  address: "123 Main Street, Downtown",
-  phone: "+1 (555) 123-4567",
-  website: "www.sunsetcafe.com",
-  hours: "Mon-Fri: 7am-8pm, Sat-Sun: 8am-9pm",
-  description:
-    "Nestled in the heart of Downtown, Sunset Cafe is your go-to spot for a warm coffee and a peaceful vibe. With soft lighting, plush seats, and a welcoming atmosphere, it’s perfect for unwinding or catching up on work.",
-  coordinates: { lat: 37.7749, lng: -122.4194 },
+type Place = {
+  id: number;
+  name: string;
+  category: string;
+  latitude: number;
+  longitude: number;
+  image: string;
+  description: string;
+  googleMapsUrl: string;
+  uberLink: string;
 };
 
 export default function PlaceDetailPage() {
   const [isFavorite, setIsFavorite] = useState(false);
   const [selectedImage, setSelectedImage] = useState(0);
+  const params = useParams();
+  const id = useMemo(() => {
+    const v = Array.isArray(params?.id) ? params?.id[0] : (params?.id as string);
+    return Number.parseInt(v || "");
+  }, [params]);
+  const placeData = useMemo(() => (places as Place[]).find((p) => p.id === id), [id]);
 
   // Function to get user's location and open a deep link
   const openRideShare = (service: "uber" | "lyft" | "googlemaps") => {
+    if (!placeData) return;
     if (!navigator.geolocation) {
       alert("Geolocation is not supported by this browser.");
       return;
@@ -65,9 +58,9 @@ export default function PlaceDetailPage() {
       (position) => {
         const pickupLat = position.coords.latitude;
         const pickupLng = position.coords.longitude;
-        const dropoffAddress = encodeURIComponent(placeData.address);
-        const dropoffLat = placeData.coordinates.lat;
-        const dropoffLng = placeData.coordinates.lng;
+        const dropoffLat = placeData.latitude;
+        const dropoffLng = placeData.longitude;
+        const dropoffAddress = encodeURIComponent(placeData.name);
         let deepLink = "";
 
         if (service === "uber") {
@@ -75,7 +68,7 @@ export default function PlaceDetailPage() {
         } else if (service === "lyft") {
           deepLink = `lyft://ride?pickup[latitude]=${pickupLat}&pickup[longitude]=${pickupLng}&destination[latitude]=${dropoffLat}&destination[longitude]=${dropoffLng}&id=lyft`;
         } else if (service === "googlemaps") {
-          deepLink = `https://www.google.com/maps/dir/?api=1&origin=${pickupLat},${pickupLng}&destination=${dropoffAddress}`;
+          deepLink = `https://www.google.com/maps/dir/?api=1&origin=${pickupLat},${pickupLng}&destination=${dropoffLat},${dropoffLng}`;
         }
 
         window.open(deepLink, "_blank");
@@ -91,6 +84,9 @@ export default function PlaceDetailPage() {
   return (
     <div className="min-h-screen bg-gray-100 py-12 px-4">
       <div className="container mx-auto max-w-4xl space-y-8">
+        {!placeData && (
+          <div className="text-center text-sm text-gray-700">Place not found.</div>
+        )}
         {/* Header */}
         <div className="flex items-center justify-between bg-white border border-gray-300 rounded-lg shadow-sm p-4">
           <Link href="/recommendations">
@@ -122,65 +118,28 @@ export default function PlaceDetailPage() {
         </div>
 
         {/* Hero Section */}
+        {placeData && (
         <Card className="relative rounded-lg border border-gray-300 bg-white shadow-lg overflow-hidden">
           <div className="h-64 sm:h-80">
-            <img
-              src={placeData.images[selectedImage]}
-              alt={placeData.name}
-              className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-            />
-            <Badge className="absolute top-4 left-4 rounded-lg bg-gray-800 text-white px-3 py-1 shadow-md">
-              {placeData.category}
-            </Badge>
+            <img src={placeData.image} alt={placeData.name} className="w-full h-full object-cover transition-transform duration-300 hover:scale-105" />
+            <Badge className="absolute top-4 left-4 rounded-lg bg-gray-800 text-white px-3 py-1 shadow-md">{placeData.category}</Badge>
           </div>
-          <div className="flex gap-2 p-4 overflow-x-auto bg-gray-100">
-            {placeData.images.map((img, i) => (
-              <button
-                key={i}
-                onClick={() => setSelectedImage(i)}
-                className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-105 ${
-                  selectedImage === i ? "border-gray-600 shadow-md" : "border-gray-300"
-                }`}
-              >
-                <img src={img} alt={`Thumbnail ${i + 1}`} className="w-full h-full object-cover" />
-              </button>
-            ))}
-          </div>
+          <div className="flex gap-2 p-4 overflow-x-auto bg-gray-100"></div>
         </Card>
+        )}
 
         {/* Main Content */}
         <div className="space-y-8">
           {/* Title & Mood */}
-          <div className="text-center space-y-3">
-            <h1 className="text-4xl font-bold text-black">{placeData.name}</h1>
-            <p className="text-lg text-gray-600 flex items-center justify-center gap-2">
-              <span className="text-2xl">{placeData.moodEmoji}</span>
-              {placeData.moodMatch}
-            </p>
-            <div className="flex justify-center gap-4 text-gray-600">
-              <div className="flex items-center gap-1">
-                <Star className="w-5 h-5 text-gray-800 fill-current" />
-                <span className="font-semibold text-black">{placeData.rating}</span>
-                <span>({placeData.reviews} reviews)</span>
-              </div>
-              <div className="flex items-center gap-1">
-                <DollarSign className="w-5 h-5 text-gray-800" />
-                <span>{placeData.price}</span>
-              </div>
+          {placeData && (
+            <div className="text-center space-y-3">
+              <h1 className="text-4xl font-bold text-black">{placeData.name}</h1>
+              <p className="text-sm text-gray-600">{placeData.category}</p>
             </div>
-          </div>
+          )}
 
           {/* Tags */}
-          <div className="flex justify-center flex-wrap gap-2">
-            {placeData.tags.map((tag) => (
-              <Badge
-                key={tag}
-                className="rounded-lg px-3 py-1 bg-gray-200 text-gray-800 border-gray-300 hover:bg-gray-300 transition-all duration-300"
-              >
-                {tag}
-              </Badge>
-            ))}
-          </div>
+          <div className="flex justify-center flex-wrap gap-2"></div>
 
           {/* Tabs */}
           <Card className="p-6 rounded-lg border border-gray-300 bg-white shadow-lg">
@@ -207,42 +166,27 @@ export default function PlaceDetailPage() {
               </TabsList>
 
               <TabsContent value="about" className="space-y-4">
-                <p className="text-gray-600 leading-relaxed">{placeData.description}</p>
+                {placeData && <p className="text-gray-600 leading-relaxed">{placeData.description}</p>}
                 <div className="space-y-3">
                   <div className="flex items-start gap-3">
                     <MapPin className="w-5 h-5 text-gray-800 mt-0.5" />
                     <div>
                       <p className="font-medium text-black">Address</p>
-                      <p className="text-sm text-gray-600">{placeData.address}</p>
+                      <p className="text-sm text-gray-600">Coordinates: {placeData ? `${placeData.latitude}, ${placeData.longitude}` : "-"}</p>
                     </div>
                   </div>
                   <div className="flex items-start gap-3">
                     <Clock className="w-5 h-5 text-gray-800 mt-0.5" />
                     <div>
                       <p className="font-medium text-black">Hours</p>
-                      <p className="text-sm text-gray-600">{placeData.hours}</p>
+                      <p className="text-sm text-gray-600">N/A</p>
                     </div>
                   </div>
                 </div>
               </TabsContent>
 
               <TabsContent value="info" className="space-y-3">
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-100">
-                  <Phone className="w-5 h-5 text-gray-800" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-600">Phone</p>
-                    <p className="font-medium text-black">{placeData.phone}</p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-100">
-                  <Globe className="w-5 h-5 text-gray-800" />
-                  <div className="flex-1">
-                    <p className="text-sm text-gray-600">Website</p>
-                    <a href={`https://${placeData.website}`} className="font-medium text-black hover:underline">
-                      {placeData.website}
-                    </a>
-                  </div>
-                </div>
+                <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-100"></div>
                 <div className="flex items-center gap-3 p-3 rounded-lg bg-gray-100">
                   <Users className="w-5 h-5 text-gray-800" />
                   <div className="flex-1">
@@ -282,22 +226,8 @@ export default function PlaceDetailPage() {
               <MapPin className="w-5 h-5 text-gray-800" />
               Find Your Way
             </h2>
-            <div className="relative h-48 rounded-lg overflow-hidden bg-gray-100">
-              <img
-                src="https://images.unsplash.com/photo-1594021372082-0aacf2c6d359?auto=format&fit=crop&w=600&h=400"
-                alt="Map of Sunset Cafe"
-                className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-              />
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center shadow-lg">
-                  <MapPin className="w-5 h-5 text-white" />
-                </div>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-gray-600">
-              <Navigation className="w-4 h-4 text-gray-800" />
-              <span>{placeData.distance} away • {placeData.time}</span>
-            </div>
+            <div className="relative h-48 rounded-lg overflow-hidden bg-gray-100"></div>
+            <div className="flex items-center gap-2 text-sm text-gray-600"></div>
             <Button
               className="w-full rounded-lg py-5 text-base bg-black text-white hover:bg-gray-800 hover:scale-105 transition-all duration-300"
               onClick={() => openRideShare("googlemaps")}

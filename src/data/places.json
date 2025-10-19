@@ -1,0 +1,113 @@
+[
+  {
+    "id": 1,
+    "name": "Marudhamalai Temple",
+    "category": "Temple",
+    "latitude": 11.0459,
+    "longitude": 76.8488,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Marudhamalai_Temple_Coimbatore.jpg/800px-Marudhamalai_Temple_Coimbatore.jpg",
+    "description": "Ancient hilltop temple dedicated to Lord Murugan with panoramic views of Coimbatore.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Marudhamalai+Temple",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 2,
+    "name": "Siruvani Waterfalls",
+    "category": "Sightseeing",
+    "latitude": 10.9797,
+    "longitude": 76.6847,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Siruvani_Waterfalls.jpg/800px-Siruvani_Waterfalls.jpg",
+    "description": "Beautiful waterfall in the Western Ghats, perfect for nature lovers and photography.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Siruvani+Waterfalls",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 3,
+    "name": "VOC Park & Zoo",
+    "category": "Sightseeing",
+    "latitude": 11.0297,
+    "longitude": 77.0138,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/VOC_Park_Coimbatore.jpg/800px-VOC_Park_Coimbatore.jpg",
+    "description": "Family-friendly park with zoo, botanical garden, and recreational facilities.",
+    "googleMapsUrl": "https://www.google.com/maps/place/VOC+Park+%26+Zoo",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 4,
+    "name": "Isha Yoga Center",
+    "category": "Sightseeing",
+    "latitude": 10.9636,
+    "longitude": 76.7353,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Isha_Yoga_Center_Coimbatore.jpg/800px-Isha_Yoga_Center_Coimbatore.jpg",
+    "description": "Spiritual center founded by Sadhguru, offering yoga programs and meditation.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Isha+Yoga+Center",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 5,
+    "name": "Perur Pateeswarar Temple",
+    "category": "Temple",
+    "latitude": 10.9766,
+    "longitude": 76.9041,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Perur_Pateeswarar_Temple.jpg/800px-Perur_Pateeswarar_Temple.jpg",
+    "description": "Ancient temple dedicated to Lord Shiva with beautiful architecture and sculptures.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Perur+Pateeswarar+Temple",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 6,
+    "name": "Brookefields Mall",
+    "category": "Sightseeing",
+    "latitude": 11.0167,
+    "longitude": 77.0062,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/2/2a/Brookefields_Mall_Coimbatore.jpg/800px-Brookefields_Mall_Coimbatore.jpg",
+    "description": "Popular shopping mall with multiplex, food court, and entertainment options.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Brookefields+Mall",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 7,
+    "name": "Gedee Car Museum",
+    "category": "Sightseeing",
+    "latitude": 11.0235,
+    "longitude": 77.0010,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/1/1a/Gedee_Car_Museum_Coimbatore.jpg/800px-Gedee_Car_Museum_Coimbatore.jpg",
+    "description": "Unique museum showcasing vintage cars and automotive history.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Gedee+Car+Museum",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 8,
+    "name": "Singanallur Lake",
+    "category": "Sightseeing",
+    "latitude": 10.9948,
+    "longitude": 77.0308,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Singanallur_Lake_Coimbatore.jpg/800px-Singanallur_Lake_Coimbatore.jpg",
+    "description": "Serene lake perfect for evening walks, bird watching, and peaceful moments.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Singanallur+Lake",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 9,
+    "name": "Sathyamangalam Tiger Reserve",
+    "category": "Sightseeing",
+    "latitude": 11.5046,
+    "longitude": 77.2384,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Sathyamangalam_Tiger_Reserve.jpg/800px-Sathyamangalam_Tiger_Reserve.jpg",
+    "description": "Wildlife sanctuary home to tigers, elephants, and diverse flora and fauna.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Sathyamangalam+Tiger+Reserve",
+    "uberLink": "https://m.uber.com/ul/"
+  },
+  {
+    "id": 10,
+    "name": "Black Thunder Water Theme Park",
+    "category": "Sightseeing",
+    "latitude": 11.2982,
+    "longitude": 76.9363,
+    "image": "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Black_Thunder_Water_Park.jpg/800px-Black_Thunder_Water_Park.jpg",
+    "description": "Thrilling water theme park with exciting rides and water attractions.",
+    "googleMapsUrl": "https://www.google.com/maps/place/Black+Thunder+Water+Theme+Park",
+    "uberLink": "https://m.uber.com/ul/"
+  }
+]
+

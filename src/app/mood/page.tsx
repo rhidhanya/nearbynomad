@@ -88,9 +88,11 @@ export default function MoodPage() {
   };
 
   const getEnergyLabel = () => {
-    if (energyLevel[0] < 33) return "🛋 Lazy - Short walks nearby";
-    if (energyLevel[0] < 66) return "🚶 Moderate - Up to 5km radius";
-    return "🧗 Adventurous - Explore far & wide";
+    if (energyLevel[0] < 20) return "😴 Very Low - Just around the corner";
+    if (energyLevel[0] < 40) return "🛋 Low - Short walks nearby";
+    if (energyLevel[0] < 60) return "🚶 Medium - Up to 5km radius";
+    if (energyLevel[0] < 80) return "🏃 High - Explore the city";
+    return "🧗 Very High - Adventure far & wide";
   };
 
   const getBudgetSuggestion = () => {
@@ -101,8 +103,47 @@ export default function MoodPage() {
     return "💰 Loaded: fine dining, events & premium experiences";
   };
 
-  const handleSubmit = () => {
-    router.push("/recommendations");
+  const handleSubmit = async () => {
+    try {
+      // Enhanced energy level mapping
+      let energyLevelStr = 'medium';
+      if (energyLevel[0] < 20) energyLevelStr = 'very_low';
+      else if (energyLevel[0] < 40) energyLevelStr = 'low';
+      else if (energyLevel[0] < 60) energyLevelStr = 'medium';
+      else if (energyLevel[0] < 80) energyLevelStr = 'high';
+      else energyLevelStr = 'very_high';
+
+      // Enhanced budget categorization
+      const budgetAmount = parseInt(budget) || 0;
+      let budgetCategory = 'medium';
+      if (budgetAmount < 20) budgetCategory = 'low';
+      else if (budgetAmount > 100) budgetCategory = 'high';
+
+      // Prepare enhanced user preferences
+      const preferences = {
+        mood: selectedMood,
+        interests: selectedInterests,
+        foodTypes: selectedFoodTypes,
+        energyLevel: energyLevelStr,
+        budget: budgetCategory,
+        budgetAmount: budgetAmount,
+        transport: transport,
+        socialMode: socialMode,
+        accessibility: accessibility,
+        timestamp: new Date().toISOString(),
+        sessionId: Math.random().toString(36).substring(7) // For variety tracking
+      };
+
+      // Store preferences in localStorage for the recommendations page
+      localStorage.setItem('userPreferences', JSON.stringify(preferences));
+      
+      // Navigate to recommendations page
+      router.push("/recommendations");
+    } catch (error) {
+      console.error('Error saving preferences:', error);
+      // Still navigate to recommendations page even if there's an error
+      router.push("/recommendations");
+    }
   };
 
   return (
