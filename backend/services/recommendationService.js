@@ -65,6 +65,7 @@ const MOOD_SCORING = {
     keywords: ['social', 'lively', 'vibrant', 'crowded', 'popular'],
     energyBoost: 0.1
   }
+  }
 };
 
 // Interest-based scoring
@@ -130,6 +131,7 @@ const calculateBaseScore = (place, preferences) => {
   const energyConfig = ENERGY_LEVELS[energyLevel] || ENERGY_LEVELS['medium'];
   const distance = parseDistance(place.distance);
   if (distance <= energyConfig.maxDistance) {
+<<<<<<< HEAD
     score += 25;
   } else {
     score -= (distance - energyConfig.maxDistance) * 5;
@@ -174,6 +176,53 @@ const addRandomization = (score, place, preferences) => {
   const idRotation = Math.sin(place.id * 0.5) * 0.05;
   
   return score * randomFactor + timeRotation + idRotation;
+=======
+    score += 20 * (1 - distance / energyConfig.maxDistance);
+  } else {
+    score -= (distance - energyConfig.maxDistance) * 2;
+  }
+  if (place.energyLevel === energyLevel) {
+    score += 15;
+  }
+
+  // Budget scoring
+  const budgetConfig = BUDGET_SCORING[budget] || BUDGET_SCORING['medium'];
+  const placePrice = place.price === 'Free' ? 0 : place.price === '$' ? 1 : place.price === '$$' ? 2 : 3;
+  if (placePrice <= budgetConfig.maxPrice) {
+    score += 15 * (1 - placePrice / budgetConfig.maxPrice);
+  } else {
+    score -= (placePrice - budgetConfig.maxPrice) * 5;
+  }
+
+  // Transport scoring
+  const transportConfig = TRANSPORT_SCORING[transport] || TRANSPORT_SCORING['car'];
+  if (place.transportModes.includes(transport) && distance <= transportConfig.maxDistance) {
+    score += 10 * transportConfig.weight;
+  }
+
+  // Social mode scoring
+  const socialConfig = SOCIAL_SCORING[socialMode] || SOCIAL_SCORING['solo'];
+  if (place.socialModes.includes(socialMode)) {
+    score += 15;
+    const socialKeywords = socialConfig.keywords || [];
+    const matchingSocialKeywords = place.tags.filter(tag => socialKeywords.includes(tag.toLowerCase()));
+    score += matchingSocialKeywords.length * 5;
+  }
+
+  // Accessibility scoring
+  const matchingAccessibility = accessibility.filter(acc => place.accessibility.includes(acc));
+  score += matchingAccessibility.length * 10;
+
+  // Food type scoring
+  const matchingFoodTypes = foodTypes.filter(food => place.foodTypes.includes(food));
+  score += matchingFoodTypes.length * 15;
+
+  // Rating boost
+  if (place.rating) {
+    score += (place.rating - 3) * 5;
+  }
+
+  return Math.max(0, score);
 };
 
 // Generate match reason for a place
@@ -228,7 +277,11 @@ const getRecommendations = (userPreferences) => {
         recommendations: []
       };
     }
+<<<<<<< HEAD
     
+=======
+
+>>>>>>> 204dc87d (updated)
     // Validate user preferences
     if (!userPreferences || !userPreferences.mood) {
       return {
@@ -237,6 +290,7 @@ const getRecommendations = (userPreferences) => {
         recommendations: []
       };
     }
+<<<<<<< HEAD
     
     // Calculate scores for all places
     const scoredPlaces = places.map(place => {
@@ -244,6 +298,15 @@ const getRecommendations = (userPreferences) => {
       const finalScore = addRandomization(baseScore, place, userPreferences);
       const matchReason = generateMatchReason(place, userPreferences);
       
+=======
+
+    // Calculate scores for all places
+    const scoredPlaces = places.map(place => {
+      const baseScore = calculateBaseScore(place, userPreferences, usedPlaceIds);
+      const randomFactor = 0.9 + Math.random() * 0.2; // Small randomization for variety
+      const finalScore = baseScore * randomFactor;
+      const matchReason = generateMatchReason(place, userPreferences);
+
       return {
         ...place,
         finalScore: Math.round(finalScore * 100) / 100,

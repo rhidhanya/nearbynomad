@@ -17,7 +17,7 @@ export default function LandingPage() {
 
           {/* Tagline */}
           <p className="text-2xl text-gray-600 leading-relaxed">
-            Hey there, wanderer! Let’s find nearby adventures that match your vibe—whether you’re craving calm or chaos.
+            Hey there, wanderer! Let's find nearby adventures that match your vibe—whether you're craving calm or chaos.
           </p>
 
           {/* CTA Buttons */}
