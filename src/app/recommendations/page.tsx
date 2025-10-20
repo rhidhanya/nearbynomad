@@ -6,19 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { 
-  MapPin, 
-  Clock, 
-  Star, 
-  DollarSign, 
-  Users, 
-  Car, 
-  Footprints, 
-  Bike,
-  Sparkles,
-  RefreshCw,
-  ArrowLeft,
-  Heart,
-  Share2
+  MapPin, Clock, Star, DollarSign, Car, RefreshCw, ArrowLeft, Heart as HeartIcon, 
+  PartyPopper, Bed, Flower2, Frown, Sparkles, Compass, Coffee, Utensils, Mountain, Zap, User
 } from 'lucide-react';
 
 interface Place {
@@ -30,22 +19,11 @@ interface Place {
   image: string;
   description?: string;
   googleMapsUrl?: string;
-  uberLink?: string;
   distance?: string;
   time?: string;
   price?: string;
   rating?: number;
-  finalScore?: number;
   matchReason?: string;
-  baseScore?: number;
-}
-
-interface RecommendationData {
-  success: boolean;
-  recommendations: Place[];
-  totalPlaces: number;
-  userPreferences: any;
-  generatedAt: string;
 }
 
 const Pages: React.FC = () => {
@@ -55,15 +33,15 @@ const Pages: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
 
+  const router = useRouter();
+
   useEffect(() => {
-    // Get user preferences from localStorage
     const savedPreferences = localStorage.getItem('userPreferences');
     if (savedPreferences) {
       const preferences = JSON.parse(savedPreferences);
       setUserPreferences(preferences);
       fetchRecommendations(preferences);
     } else {
-      // If no preferences, redirect to mood page
       router.push('/mood');
     }
   }, []);
@@ -72,17 +50,13 @@ const Pages: React.FC = () => {
     try {
       setLoading(true);
       setError(null);
-      
-      // Try to fetch from backend API first
+
       try {
         const response = await fetch('http://localhost:8080/api/recommendations', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(preferences),
         });
-        
         if (response.ok) {
           const data = await response.json();
           if (data.success && data.data.recommendations) {
@@ -93,81 +67,41 @@ const Pages: React.FC = () => {
       } catch (apiError) {
         console.log('Backend API not available, using fallback data:', apiError);
       }
-      
-      // Fallback to sample data if backend is not available
-      const fallbackRecommendations = [
+
+      const fallbackRecommendations: Place[] = [
         {
           id: 1,
           name: "Marudhamalai Temple",
           category: "Temple",
+          latitude: 11.044,
+          longitude: 76.863,
           image: "https://upload.wikimedia.org/wikipedia/commons/thumb/8/8a/Marudhamalai_Temple_Coimbatore.jpg/800px-Marudhamalai_Temple_Coimbatore.jpg",
           description: "Ancient hilltop temple dedicated to Lord Murugan with panoramic views of Coimbatore.",
           distance: "15 km",
-      rating: 4.5,
-          finalScore: 95,
-          matchReason: "Perfect for your spiritual and peaceful mood"
+          rating: 4.5,
+          matchReason: "Perfect for your spiritual and peaceful mood",
+          googleMapsUrl: "https://www.google.com/maps/dir/?api=1&destination=11.044,76.863"
         },
         {
           id: 2,
           name: "Siruvani Waterfalls",
           category: "Sightseeing",
+          latitude: 10.938,
+          longitude: 76.687,
           image: "https://upload.wikimedia.org/wikipedia/commons/thumb/5/5a/Siruvani_Waterfalls.jpg/800px-Siruvani_Waterfalls.jpg",
           description: "Beautiful waterfall in the Western Ghats, perfect for nature lovers and photography.",
-      distance: "45 km",
-      rating: 4.7,
-          finalScore: 88,
-          matchReason: "Great for nature lovers and adventure seekers"
+          distance: "45 km",
+          rating: 4.7,
+          matchReason: "Great for nature lovers and adventure seekers",
+          googleMapsUrl: "https://www.google.com/maps/dir/?api=1&destination=10.938,76.687"
         },
-        {
-          id: 3,
-          name: "VOC Park & Zoo",
-      category: "Sightseeing",
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/3/3a/VOC_Park_Coimbatore.jpg/800px-VOC_Park_Coimbatore.jpg",
-          description: "Family-friendly park with zoo, botanical garden, and recreational facilities.",
-          distance: "8 km",
-      rating: 4.2,
-          finalScore: 82,
-          matchReason: "Perfect for family outings and relaxation"
-        },
-        {
-          id: 4,
-          name: "Isha Yoga Center",
-      category: "Sightseeing",
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/9/9a/Isha_Yoga_Center_Coimbatore.jpg/800px-Isha_Yoga_Center_Coimbatore.jpg",
-          description: "Spiritual center founded by Sadhguru, offering yoga programs and meditation.",
-      distance: "25 km",
-      rating: 4.8,
-          finalScore: 90,
-          matchReason: "Ideal for spiritual seekers and wellness enthusiasts"
-        },
-        {
-          id: 5,
-          name: "Perur Pateeswarar Temple",
-          category: "Temple",
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/6/6a/Perur_Pateeswarar_Temple_Coimbatore.jpg/800px-Perur_Pateeswarar_Temple_Coimbatore.jpg",
-          description: "Ancient temple dedicated to Lord Shiva, known for its architectural beauty.",
-          distance: "12 km",
-        rating: 4.3,
-          finalScore: 85,
-          matchReason: "Rich in history and cultural significance"
-        },
-        {
-          id: 6,
-          name: "Coimbatore Railway Museum",
-        category: "Sightseeing",
-          image: "https://upload.wikimedia.org/wikipedia/commons/thumb/4/4a/Coimbatore_Railway_Museum.jpg/800px-Coimbatore_Railway_Museum.jpg",
-          description: "Museum showcasing the history of Indian Railways with vintage locomotives.",
-          distance: "5 km",
-          rating: 4.1,
-          finalScore: 78,
-          matchReason: "Great for history buffs and railway enthusiasts"
-        }
+        // Add more fallback places as needed
       ];
-      
+
       setRecommendations(fallbackRecommendations);
     } catch (err) {
-      console.error('Error fetching recommendations:', err);
-      setError('Failed to load recommendations. Please try again.');
+      console.error(err);
+      setError('Failed to load recommendations.');
     } finally {
       setLoading(false);
     }
@@ -181,15 +115,30 @@ const Pages: React.FC = () => {
     }
   };
 
+  const handleUberClick = (place: Place) => {
+    if (place.latitude && place.longitude) {
+      const lat = place.latitude;
+      const lng = place.longitude;
+      const formattedAddress = encodeURIComponent(place.name); // Use place name as address label
+  
+      const uberDeepLink = `https://m.uber.com/?action=setPickup&pickup=my_location&dropoff[latitude]=${lat}&dropoff[longitude]=${lng}&dropoff[formatted_address]=${formattedAddress}`;
+  
+      window.open(uberDeepLink, '_blank');
+    } else {
+      window.open('https://m.uber.com', '_blank');
+    }
+  };
+  
+
   const getCategoryIcon = (category: string) => {
     switch (category.toLowerCase()) {
-      case 'temple': return '🛕';
-      case 'sightseeing': return '🏛️';
-      case 'adventure': return '🏔️';
-      case 'cafe': return '☕';
-      case 'restaurant': return '🍽️';
-      case 'shopping': return '🛍️';
-      default: return '📍';
+      case 'temple': return <HeartIcon className="w-4 h-4" />;
+      case 'sightseeing': return <MapPin className="w-4 h-4" />;
+      case 'adventure': return <Mountain className="w-4 h-4" />;
+      case 'cafe': return <Coffee className="w-4 h-4" />;
+      case 'restaurant': return <Utensils className="w-4 h-4" />;
+      case 'shopping': return <Zap className="w-4 h-4" />;
+      default: return <MapPin className="w-4 h-4" />;
     }
   };
 
@@ -205,21 +154,20 @@ const Pages: React.FC = () => {
     }
   };
 
-  const getEnergyIcon = (energyLevel: string) => {
-    switch (energyLevel) {
-      case 'very_low': return '😴';
-      case 'low': return '🛋️';
-      case 'medium': return '🚶';
-      case 'high': return '🏃';
-      case 'very_high': return '🧗';
-      default: return '⚡';
+  const getMoodIcon = (mood: string) => {
+    switch (mood) {
+      case 'happy': return <PartyPopper className="w-4 h-4" />;
+      case 'tired': return <Bed className="w-4 h-4" />;
+      case 'calm': return <Flower2 className="w-4 h-4" />;
+      case 'romantic': return <HeartIcon className="w-4 h-4" />;
+      case 'sad': return <Frown className="w-4 h-4" />;
+      case 'excited': return <Sparkles className="w-4 h-4" />;
+      default: return <Zap className="w-4 h-4" />;
     }
   };
 
-  const router = useRouter();
-
   if (loading) {
-  return (
+    return (
       <div className="min-h-screen bg-gray-100 flex items-center justify-center">
         <div className="text-center">
           <RefreshCw className="w-8 h-8 animate-spin mx-auto mb-4 text-gray-600" />
@@ -230,211 +178,155 @@ const Pages: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100">
-      {/* Header */}
-      <div className="bg-white shadow-sm border-b border-gray-200">
-        <div className="container mx-auto px-6 py-4">
+    <div className="min-h-screen bg-gray-100 py-12 px-4">
+      <div className="container mx-auto max-w-6xl space-y-8">
+
+        {/* Header */}
+        <div className="space-y-3">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="outline"
-                onClick={() => router.push('/mood')}
-                className="flex items-center gap-2"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                Back to Mood
-              </Button>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-                  <Sparkles className="w-6 h-6 text-yellow-500" />
-                  Your Personalized Recommendations
-                </h1>
-                <p className="text-gray-600">Discover places that match your vibe perfectly</p>
-              </div>
+            <div className="flex items-center gap-3">
+              <Compass className="w-8 h-8 text-gray-800 transition-transform duration-300 hover:rotate-12" />
+              <h1 className="text-4xl font-bold text-black tracking-tight">Your Perfect Spots</h1>
             </div>
             <Button
-              onClick={handleRefresh}
-              disabled={refreshing}
-              className="flex items-center gap-2"
+              variant="ghost"
+              size="sm"
+              onClick={() => router.push('/profile')}
+              className="p-2 rounded-full hover:bg-gray-200"
             >
-              <RefreshCw className={`w-4 h-4 ${refreshing ? 'animate-spin' : ''}`} />
-              {refreshing ? 'Refreshing...' : 'Get New Recommendations'}
+              <User className="w-6 h-6 text-gray-800" />
             </Button>
           </div>
+          <p className="text-lg text-gray-600 leading-relaxed text-center">
+            Discover places that match your vibe perfectly
+          </p>
         </div>
-      </div>
 
-      {/* User Preferences Display */}
-      {userPreferences && (
-        <div className="bg-blue-50 border-b border-blue-200">
-          <div className="container mx-auto px-6 py-4">
-            <h3 className="text-sm font-semibold text-blue-800 mb-2">Based on your preferences:</h3>
-            <div className="flex flex-wrap gap-2">
-              <Badge className="bg-blue-100 text-blue-800">
-                Mood: {userPreferences.mood} {getEnergyIcon(userPreferences.energyLevel)}
+        {/* User Preferences Display */}
+        {userPreferences && (
+          <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
+            <h3 className="text-xl font-semibold text-black mb-4 flex items-center gap-2">
+              <HeartIcon className="w-6 h-6 text-gray-800" />
+              Based on your preferences
+            </h3>
+            <div className="flex flex-wrap gap-3">
+              <Badge className="bg-gray-200 text-gray-800 flex items-center gap-2">
+                {getMoodIcon(userPreferences.mood)}
+                Mood: {userPreferences.mood}
               </Badge>
               {userPreferences.interests?.map((interest: string) => (
-                <Badge key={interest} className="bg-green-100 text-green-800">
+                <Badge key={interest} className="bg-gray-200 text-gray-800">
                   {interest}
                 </Badge>
               ))}
-              <Badge className="bg-purple-100 text-purple-800">
+              <Badge className="bg-gray-200 text-gray-800">
                 Energy: {userPreferences.energyLevel}
               </Badge>
-              <Badge className="bg-orange-100 text-orange-800">
+              <Badge className="bg-gray-200 text-gray-800">
                 Social: {userPreferences.socialMode}
               </Badge>
               {userPreferences.budget && (
-                <Badge className="bg-yellow-100 text-yellow-800">
+                <Badge className="bg-gray-200 text-gray-800">
                   Budget: {userPreferences.budget}
                 </Badge>
               )}
             </div>
-          </div>
-        </div>
-      )}
+          </Card>
+        )}
 
-      {/* Error Display */}
-      {error && (
-        <div className="bg-red-50 border-b border-red-200">
-          <div className="container mx-auto px-6 py-4">
-            <p className="text-red-800">{error}</p>
-          </div>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 justify-center">
+          <Button
+            onClick={() => router.push('/mood')}
+            variant="outline"
+            className="flex items-center gap-2 px-6 py-3 text-lg border-2 border-gray-600 text-gray-800 rounded-lg hover:bg-gray-200 hover:scale-105 transition-all duration-300"
+          >
+            <ArrowLeft className="w-5 h-5" />
+            Back to Mood
+          </Button>
+          <Button
+            onClick={handleRefresh}
+            disabled={refreshing}
+            className="flex items-center gap-2 px-6 py-3 text-lg bg-black text-white rounded-lg hover:bg-gray-800 hover:scale-105 transition-all duration-300"
+          >
+            <RefreshCw className={`w-5 h-5 ${refreshing ? 'animate-spin' : ''}`} />
+            {refreshing ? 'Refreshing...' : 'Get New Recommendations'}
+          </Button>
         </div>
-      )}
 
-      {/* Recommendations Grid */}
-      <div className="container mx-auto px-6 py-8">
+        {/* Recommendations Grid */}
         {recommendations.length === 0 ? (
-          <div className="text-center py-12">
-            <p className="text-lg text-gray-600 mb-4">No recommendations found</p>
-            <Button onClick={() => router.push('/mood')}>
-              Try Different Preferences
-            </Button>
-          </div>
+          <Card className="p-12 rounded-lg border border-gray-300 bg-white shadow-lg text-center">
+            <div className="space-y-4">
+              <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center mx-auto">
+                <MapPin className="w-8 h-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">No recommendations found</h3>
+              <p className="text-gray-600">Try updating your preferences to find more places</p>
+              <Button onClick={() => router.push('/mood')} className="mt-4 bg-black text-white hover:bg-gray-800">
+                Update Preferences
+              </Button>
+            </div>
+          </Card>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {recommendations.map((place, index) => (
-              <Card key={place.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105">
+              <Card key={place.id} className="overflow-hidden hover:shadow-lg transition-all duration-300 hover:scale-105 rounded-lg border border-gray-300 bg-white shadow-lg">
                 <div className="relative">
-                  <img
-                    src={place.image}
-          alt={place.name}
-                    className="w-full h-48 object-cover"
-        />
+                  <img src={place.image} alt={place.name} className="w-full h-48 object-cover" />
                   <div className="absolute top-4 left-4">
                     <Badge className={`${getCategoryColor(place.category)} flex items-center gap-1`}>
-                      <span>{getCategoryIcon(place.category)}</span>
-          {place.category}
+                      {getCategoryIcon(place.category)}
+                      {place.category}
                     </Badge>
-        </div>
+                  </div>
                   <div className="absolute top-4 right-4">
                     <Badge className="bg-white/90 text-gray-800">
                       #{index + 1}
                     </Badge>
-        </div>
-      </div>
+                  </div>
+                </div>
 
                 <div className="p-6">
                   <div className="flex items-start justify-between mb-3">
-                    <h3 className="text-xl font-bold text-gray-900 line-clamp-2">
-                      {place.name}
-                    </h3>
+                    <h3 className="text-xl font-bold text-gray-900 line-clamp-2">{place.name}</h3>
                     <div className="flex items-center gap-1 ml-2">
                       <Star className="w-4 h-4 text-yellow-500 fill-current" />
-                      <span className="text-sm font-medium text-gray-700">
-                        {place.rating || 'N/A'}
-                      </span>
-          </div>
-        </div>
+                      <span className="text-sm font-medium text-gray-700">{place.rating || 'N/A'}</span>
+                    </div>
+                  </div>
 
                   {place.matchReason && (
-                    <p className="text-sm text-blue-600 mb-3 font-medium">
-                      {place.matchReason}
-                    </p>
+                    <p className="text-sm text-gray-600 mb-3 font-medium">{place.matchReason}</p>
                   )}
                   
                   {place.description && (
-                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">
-                      {place.description}
-                    </p>
+                    <p className="text-gray-600 text-sm mb-4 line-clamp-2">{place.description}</p>
                   )}
                   
-                  <div className="space-y-2 mb-4">
-                    {place.distance && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <MapPin className="w-4 h-4" />
-                        <span>{place.distance}</span>
-          </div>
-                    )}
-                    {place.time && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <Clock className="w-4 h-4" />
-                        <span>{place.time}</span>
-        </div>
-                    )}
-                    {place.price && (
-                      <div className="flex items-center gap-2 text-sm text-gray-600">
-                        <DollarSign className="w-4 h-4" />
-                        <span>{place.price}</span>
-          </div>
-                    )}
-        </div>
+                  <div className="space-y-2 mb-6">
+                    {place.distance && <div className="flex items-center gap-2 text-sm text-gray-600"><MapPin className="w-4 h-4" /><span>{place.distance}</span></div>}
+                    {place.time && <div className="flex items-center gap-2 text-sm text-gray-600"><Clock className="w-4 h-4" /><span>{place.time}</span></div>}
+                    {place.price && <div className="flex items-center gap-2 text-sm text-gray-600"><DollarSign className="w-4 h-4" /><span>{place.price}</span></div>}
+                  </div>
                   
-                  {place.finalScore && (
-                    <div className="mb-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span className="text-gray-600">Match Score:</span>
-                        <span className="font-semibold text-green-600">
-                          {Math.round(place.finalScore)}%
-                        </span>
-      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
-                        <div 
-                          className="bg-green-500 h-2 rounded-full transition-all duration-500"
-                          style={{ width: `${Math.min(place.finalScore, 100)}%` }}
-                        ></div>
-    </div>
-                    </div>
-                  )}
-                  
-                  <div className="flex gap-2">
-                    {place.googleMapsUrl && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(place.googleMapsUrl, '_blank')}
-                        className="flex-1"
-                      >
-                        <MapPin className="w-4 h-4 mr-2" />
-                        View Map
-                      </Button>
-                    )}
-                    {place.uberLink && (
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => window.open(place.uberLink, '_blank')}
-                        className="flex-1"
-                      >
-                        <Car className="w-4 h-4 mr-2" />
-                        Get Ride
-                      </Button>
-                    )}
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Button variant="outline" size="sm" onClick={() => place.googleMapsUrl && window.open(place.googleMapsUrl, '_blank')} className="flex-1">
+                      <MapPin className="w-4 h-4 mr-2" />View Map
+                    </Button>
+                    <Button variant="outline" size="sm" onClick={() => handleUberClick(place)} className="flex-1">
+                      <Car className="w-4 h-4 mr-2" />Uber
+                    </Button>
                   </div>
                 </div>
               </Card>
-        ))}
-      </div>
+            ))}
+          </div>
         )}
-    </div>
 
-      {/* Footer */}
-      <div className="bg-gray-800 text-white py-8 mt-12">
-        <div className="container mx-auto px-6 text-center">
-          <p className="text-gray-300">
-            &copy; 2025 NearbyNomad. Discover your perfect adventure! 🌟
-          </p>
+        {/* Footer */}
+        <div className="text-center py-8">
+          <p className="text-gray-500">&copy; 2025 NearbyNomad. Discover your perfect adventure! 🌟</p>
         </div>
       </div>
     </div>

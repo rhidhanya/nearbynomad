@@ -3,15 +3,15 @@
 import { Card } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
-import { Trophy, Flame, Star, Award } from "lucide-react"
+import { Trophy, Flame, Star, Award, Cake, Leaf, Coffee, Moon, Bird, Sparkles } from "lucide-react"
 
 const badges = [
-  { id: 1, name: "Dessert Explorer", emoji: "🍰", earned: true, description: "Visited 5 dessert spots" },
-  { id: 2, name: "Hidden Park Finder", emoji: "🌿", earned: true, description: "Discovered 3 hidden parks" },
-  { id: 3, name: "Coffee Connoisseur", emoji: "☕", earned: true, description: "Tried 10 different cafes" },
-  { id: 4, name: "Night Owl", emoji: "🦉", earned: false, description: "Visit 5 places after 8pm" },
-  { id: 5, name: "Early Bird", emoji: "🐦", earned: false, description: "Visit 5 places before 9am" },
-  { id: 6, name: "Social Butterfly", emoji: "🦋", earned: false, description: "Visit 10 places with friends" },
+  { id: 1, name: "Dessert Explorer", icon: Cake, earned: true, description: "Visited 5 dessert spots" },
+  { id: 2, name: "Hidden Park Finder", icon: Leaf, earned: true, description: "Discovered 3 hidden parks" },
+  { id: 3, name: "Coffee Connoisseur", icon: Coffee, earned: true, description: "Tried 10 different cafes" },
+  { id: 4, name: "Night Owl", icon: Moon, earned: false, description: "Visit 5 places after 8pm" },
+  { id: 5, name: "Early Bird", icon: Bird, earned: false, description: "Visit 5 places before 9am" },
+  { id: 6, name: "Social Butterfly", icon: Sparkles, earned: false, description: "Visit 10 places with friends" },
 ]
 
 export function GamificationWidget() {
@@ -33,7 +33,9 @@ export function GamificationWidget() {
               <p className="text-sm text-muted-foreground">Exploration Streak</p>
             </div>
           </div>
-          <div className="text-4xl animate-pulse">🔥</div>
+          <div className="w-12 h-12 rounded-2xl bg-primary/20 flex items-center justify-center animate-pulse">
+            <Flame className="w-7 h-7 text-primary" />
+          </div>
         </div>
       </Card>
 
@@ -58,7 +60,9 @@ export function GamificationWidget() {
               }`}
               title={badge.description}
             >
-              <div className="text-3xl text-center mb-1">{badge.emoji}</div>
+              <div className="flex items-center justify-center mb-1">
+                {badge.icon && (<badge.icon className="w-6 h-6" />)}
+              </div>
               <p className="text-xs text-center font-medium line-clamp-2">{badge.name}</p>
               {badge.earned && (
                 <div className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-primary flex items-center justify-center">

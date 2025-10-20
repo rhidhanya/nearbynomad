@@ -23,15 +23,29 @@ import {
   Users,
   User,
   Mountain, // Added Mountain import
+  Smile,
+  Bed,
+  Flower2,
+  Heart as HeartIcon,
+  Frown,
+  PartyPopper,
+  Sandwich,
+  Soup,
+  Donut,
+  Dog,
+  Baby,
+  Accessibility,
+  ShieldCheck,
+  DollarSign
 } from "lucide-react";
 
 const moods = [
-  { emoji: "😊", label: "Happy", value: "happy" },
-  { emoji: "😴", label: "Tired", value: "tired" },
-  { emoji: "🌸", label: "Calm", value: "calm" },
-  { emoji: "😍", label: "Romantic", value: "romantic" },
-  { emoji: "😔", label: "Sad", value: "sad" },
-  { emoji: "🤩", label: "Excited", value: "excited" },
+  { Icon: Smile, label: "Happy", value: "happy" },
+  { Icon: Bed, label: "Tired", value: "tired" },
+  { Icon: Flower2, label: "Calm", value: "calm" },
+  { Icon: HeartIcon, label: "Romantic", value: "romantic" },
+  { Icon: Frown, label: "Sad", value: "sad" },
+  { Icon: PartyPopper, label: "Excited", value: "excited" },
 ];
 
 const interests = [
@@ -45,9 +59,9 @@ const interests = [
 ];
 
 const foodTypes = [
-  { emoji: "🍔", label: "Junk Food", value: "junk" },
-  { emoji: "🍲", label: "Home Food", value: "home" },
-  { emoji: "🍩", label: "Desserts", value: "desserts" },
+  { Icon: Sandwich, label: "Junk Food", value: "junk" },
+  { Icon: Soup, label: "Home Food", value: "home" },
+  { Icon: Donut, label: "Desserts", value: "desserts" },
 ];
 
 const transportOptions = [
@@ -58,10 +72,10 @@ const transportOptions = [
 ];
 
 const accessibilityOptions = [
-  { emoji: "🐶", label: "Pet-friendly", value: "pet" },
-  { emoji: "👶", label: "Kid-friendly", value: "kid" },
-  { emoji: "♿", label: "Wheelchair accessible", value: "wheelchair" },
-  { emoji: "🚶‍♀️", label: "Safe-walk", value: "safe" },
+  { Icon: Dog, label: "Pet-friendly", value: "pet" },
+  { Icon: Baby, label: "Kid-friendly", value: "kid" },
+  { Icon: Accessibility, label: "Wheelchair accessible", value: "wheelchair" },
+  { Icon: ShieldCheck, label: "Safe-walk", value: "safe" },
 ];
 
 export default function MoodPage() {
@@ -88,19 +102,19 @@ export default function MoodPage() {
   };
 
   const getEnergyLabel = () => {
-    if (energyLevel[0] < 20) return "😴 Very Low - Just around the corner";
-    if (energyLevel[0] < 40) return "🛋 Low - Short walks nearby";
-    if (energyLevel[0] < 60) return "🚶 Medium - Up to 5km radius";
-    if (energyLevel[0] < 80) return "🏃 High - Explore the city";
-    return "🧗 Very High - Adventure far & wide";
+    if (energyLevel[0] < 20) return "Very Low - Just around the corner";
+    if (energyLevel[0] < 40) return "Low - Short walks nearby";
+    if (energyLevel[0] < 60) return "Medium - Up to 5km radius";
+    if (energyLevel[0] < 80) return "High - Explore the city";
+    return "Very High - Adventure far & wide";
   };
 
   const getBudgetSuggestion = () => {
     const amount = Number.parseInt(budget);
     if (!amount) return "";
-    if (amount < 20) return "💸 Broke mode: street food walks & free spots";
-    if (amount < 50) return "💵 Budget-friendly: casual dining & local gems";
-    return "💰 Loaded: fine dining, events & premium experiences";
+    if (amount < 20) return "Budget-saving: street food walks & free spots";
+    if (amount < 50) return "Budget-friendly: casual dining & local gems";
+    return "Premium: fine dining, events & premium experiences";
   };
 
   const handleSubmit = async () => {
@@ -167,20 +181,25 @@ export default function MoodPage() {
             How’s Your Mood?
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-            {moods.map((mood) => (
-              <button
-                key={mood.value}
-                onClick={() => setSelectedMood(mood.value)}
-                className={`p-4 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
-                  selectedMood === mood.value
-                    ? "border-gray-600 bg-gray-200 shadow-md"
-                    : "border-gray-300 bg-white hover:border-gray-400"
-                }`}
-              >
-                <div className="text-3xl mb-2">{mood.emoji}</div>
-                <div className="text-sm font-medium text-gray-800">{mood.label}</div>
-              </button>
-            ))}
+            {moods.map((mood) => {
+              const Icon = mood.Icon;
+              return (
+                <button
+                  key={mood.value}
+                  onClick={() => setSelectedMood(mood.value)}
+                  className={`p-4 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                    selectedMood === mood.value
+                      ? "border-gray-600 bg-gray-200 shadow-md"
+                      : "border-gray-300 bg-white hover:border-gray-400"
+                  }`}
+                >
+                  <div className="mb-2 flex items-center justify-center">
+                    <Icon className="w-6 h-6" />
+                  </div>
+                  <div className="text-sm font-medium text-gray-800">{mood.label}</div>
+                </button>
+              );
+            })}
           </div>
         </Card>
 
@@ -215,20 +234,23 @@ export default function MoodPage() {
             <div className="mt-6 pt-4 border-t border-gray-300">
               <h3 className="text-sm font-semibold text-gray-600 mb-3">What kind of food?</h3>
               <div className="flex flex-wrap gap-3">
-                {foodTypes.map((food) => (
-                  <button
-                    key={food.value}
-                    onClick={() => toggleFoodType(food.value)}
-                    className={`px-4 py-2 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
-                      selectedFoodTypes.includes(food.value)
-                        ? "border-gray-600 bg-gray-200 shadow-md"
-                        : "border-gray-300 bg-white hover:border-gray-400"
-                    }`}
-                  >
-                    <span className="mr-2">{food.emoji}</span>
-                    <span className="text-sm font-medium text-gray-800">{food.label}</span>
-                  </button>
-                ))}
+                {foodTypes.map((food) => {
+                  const Icon = food.Icon;
+                  return (
+                    <button
+                      key={food.value}
+                      onClick={() => toggleFoodType(food.value)}
+                      className={`px-4 py-2 rounded-lg border-2 transition-all duration-300 hover:scale-105 hover:shadow-md ${
+                        selectedFoodTypes.includes(food.value)
+                          ? "border-gray-600 bg-gray-200 shadow-md"
+                          : "border-gray-300 bg-white hover:border-gray-400"
+                      }`}
+                    >
+                      <span className="mr-2 inline-flex items-center"><Icon className="w-4 h-4" /></span>
+                      <span className="text-sm font-medium text-gray-800">{food.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
@@ -259,7 +281,7 @@ export default function MoodPage() {
           <h2 className="text-xl font-semibold text-black mb-4">What’s Your Budget?</h2>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
-              <span className="text-2xl">💵</span>
+              <DollarSign className="w-5 h-5" />
               <Input
                 type="number"
                 placeholder="Enter amount"
@@ -333,21 +355,24 @@ export default function MoodPage() {
         <Card className="p-8 rounded-lg border border-gray-300 bg-white shadow-lg">
           <h2 className="text-xl font-semibold text-black mb-4">Any Accessibility Needs?</h2>
           <div className="flex flex-wrap gap-3">
-            {accessibilityOptions.map((option) => (
-              <Badge
-                key={option.value}
-                variant={accessibility.includes(option.value) ? "default" : "outline"}
-                className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-all duration-300 hover:scale-105 ${
-                  accessibility.includes(option.value)
-                    ? "bg-gray-200 border-gray-600 text-gray-800 shadow-md"
-                    : "border-gray-300 text-gray-600 hover:border-gray-400"
-                }`}
-                onClick={() => toggleAccessibility(option.value)}
-              >
-                <span className="mr-2">{option.emoji}</span>
-                {option.label}
-              </Badge>
-            ))}
+            {accessibilityOptions.map((option) => {
+              const Icon = option.Icon;
+              return (
+                <Badge
+                  key={option.value}
+                  variant={accessibility.includes(option.value) ? "default" : "outline"}
+                  className={`px-4 py-2 rounded-lg text-sm cursor-pointer transition-all duration-300 hover:scale-105 ${
+                    accessibility.includes(option.value)
+                      ? "bg-gray-200 border-gray-600 text-gray-800 shadow-md"
+                      : "border-gray-300 text-gray-600 hover:border-gray-400"
+                  }`}
+                  onClick={() => toggleAccessibility(option.value)}
+                >
+                  <span className="mr-2 inline-flex items-center"><Icon className="w-4 h-4" /></span>
+                  {option.label}
+                </Badge>
+              );
+            })}
           </div>
         </Card>
 
